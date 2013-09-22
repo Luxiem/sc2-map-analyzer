@@ -1,0 +1,186 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{9FFA7FFB-E415-48B5-A560-712FF5F1E8D2}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>SC2MA</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_USE_MATH_DEFINES;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(DEV)\tinyxml\;$(DEV)\glew-1.9.0\include;..\..\analyser;..\..\presentation;$(DEV)\sc2map\StormLib\src;$(DEV)\lpng162;$(DEV)\sc2map\ftgl-2.1.3~rc5\src;$(DEV)\freetype-2.3.5-1-lib\include;$(DEV)\freetype-2.3.5-1-lib\include\freetype2</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile />
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(DEV)\sc2map\ftgl-2.1.3~rc5\msvc\Build;$(DEV)\lpng162\projects\vstudio\Release Library;$(DEV)\glew-1.9.0\lib;$(DEV)\freetype-2.3.5-1-lib\lib;$(DEV)\tinyxml\;$(DEV)\sc2map\StormLib\bin\StormLib\Win32\DebugAS</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libcmt</IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>_USE_MATH_DEFINES;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile />
+      <AdditionalIncludeDirectories>$(DEV)\tinyxml\;$(DEV)\glew-1.9.0\include;..\..\analyser;..\..\presentation;$(DEV)\sc2map\StormLib\src;$(DEV)\lpng162;$(DEV)\sc2map\ftgl-2.1.3~rc5\src;$(DEV)\freetype-2.3.5-1-lib\include;$(DEV)\freetype-2.3.5-1-lib\include\freetype2</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(DEV)\sc2map\ftgl-2.1.3~rc5\msvc\Build;$(DEV)\lpng162\projects\vstudio\Release Library;$(DEV)\glew-1.9.0\lib;$(DEV)\freetype-2.3.5-1-lib\lib;$(DEV)\tinyxml\;$(DEV)\sc2map\StormLib\bin\StormLib\Win32\ReleaseAS</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\analyser\config.hpp" />
+    <ClInclude Include="..\..\analyser\coordinates.hpp" />
+    <ClInclude Include="..\..\analyser\debug.hpp" />
+    <ClInclude Include="..\..\analyser\outstreams.hpp" />
+    <ClInclude Include="..\..\analyser\PrioQueue.hpp" />
+    <ClInclude Include="..\..\analyser\SC2Map.hpp" />
+    <ClInclude Include="..\..\analyser\SC2MapAggregator.hpp" />
+    <ClInclude Include="..\..\analyser\sc2mapTypes.hpp" />
+    <ClInclude Include="..\..\analyser\utility.hpp" />
+    <ClInclude Include="..\..\presentation\Common.h" />
+    <ClInclude Include="..\..\presentation\Controller.h" />
+    <ClInclude Include="..\..\presentation\FontManager.h" />
+    <ClInclude Include="..\..\presentation\pngwriter.h" />
+    <ClInclude Include="..\..\presentation\RectManager.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\Banner.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\Button.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\Combo.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\Container.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\DrawManager.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\HStack.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\List.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\Page.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\ResourceManager.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\Slider.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\SpriteManager.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\Stack.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\Switch.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\TextBox.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\ToggleButton.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\ToggleGroup.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\UIVerse.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\UVFontManager.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\UVRectManager.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\VStack.h" />
+    <ClInclude Include="..\..\presentation\UV\UIVerse\Widget.h" />
+    <ClInclude Include="..\..\presentation\UV\UV.h" />
+    <ClInclude Include="..\..\presentation\View.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\analyser\bases.cpp" />
+    <ClCompile Include="..\..\analyser\bookkeeping.cpp" />
+    <ClCompile Include="..\..\analyser\config.cpp" />
+    <ClCompile Include="..\..\analyser\coordinates.cpp" />
+    <ClCompile Include="..\..\analyser\debug.cpp" />
+    <ClCompile Include="..\..\analyser\dijkstra.cpp" />
+    <ClCompile Include="..\..\analyser\openness.cpp" />
+    <ClCompile Include="..\..\analyser\outstreams.cpp" />
+    <ClCompile Include="..\..\analyser\pathing.cpp" />
+    <ClCompile Include="..\..\analyser\placedobjects.cpp" />
+    <ClCompile Include="..\..\analyser\PrioQueue.cpp" />
+    <ClCompile Include="..\..\analyser\read.cpp" />
+    <ClCompile Include="..\..\analyser\SC2Map.cpp" />
+    <ClCompile Include="..\..\analyser\SC2MapAggregator.cpp" />
+    <ClCompile Include="..\..\analyser\spreadsheet.cpp" />
+    <ClCompile Include="..\..\analyser\utility.cpp" />
+    <ClCompile Include="..\..\presentation\Common.cpp" />
+    <ClCompile Include="..\..\presentation\Controller.cpp" />
+    <ClCompile Include="..\..\presentation\FontManager.cpp" />
+    <ClCompile Include="..\..\presentation\pngwriter.cc" />
+    <ClCompile Include="..\..\presentation\RectManager.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UIVerse\Banner.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UIVerse\Button.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UIVerse\Combo.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UIVerse\Container.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UIVerse\DrawManager.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UIVerse\HStack.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UIVerse\List.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UIVerse\Page.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UIVerse\ResourceManager.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UIVerse\Slider.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UIVerse\SpriteManager.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UIVerse\Stack.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UIVerse\Switch.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UIVerse\TextBox.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UIVerse\ToggleButton.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UIVerse\ToggleGroup.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UIVerse\UIVerse.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UIVerse\UVRectManager.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UIVerse\VStack.cpp" />
+    <ClCompile Include="..\..\presentation\UV\UV.cpp" />
+    <ClCompile Include="..\..\presentation\View.cpp" />
+    <ClCompile Include="SC2MA.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SC2MA.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="SC2MA.ico" />
+    <Image Include="small.ico" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
