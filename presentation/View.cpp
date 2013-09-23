@@ -12,11 +12,11 @@
 ((DWORD)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
 
 
-static inline DWORD ColorToDword(Color* a_color)
+static inline DWORD ColorToDword(Color* a_color, int a = 0xff)
 {
   if (a_color == 0) return 0xffaaaaaa;
 
-  return DWORD_ARGB(0xff, (int)(255 * a_color->r), (int)(255 * a_color->g), (int)(255 * a_color->b));
+  return DWORD_ARGB(a, (int)(255 * a_color->r), (int)(255 * a_color->g), (int)(255 * a_color->b));
 }
 
 
@@ -496,15 +496,15 @@ void View::DrawMap()
 				
 				if (h == 1)
 				{
-					colour = ColorToDword(m_sc2map->getColor("terrainElev1"));
+					colour = ColorToDword(m_sc2map->getColor("terrainElev1"), (int)(255.f * m_controller->GetAlpha1()));
 				}
 				else if (h == 2)
 				{
-					colour = ColorToDword(m_sc2map->getColor("terrainElev2"));
+					colour = ColorToDword(m_sc2map->getColor("terrainElev2"), (int)(255.f * m_controller->GetAlpha1()));
 				}
 				else if (h == 3)
 				{
-					colour = ColorToDword(m_sc2map->getColor("terrainElev3"));
+					colour = ColorToDword(m_sc2map->getColor("terrainElev3"), (int)(255.f * m_controller->GetAlpha1()));
 				}
 				
 				if (IsPathable(i, j, PATH_GROUND_NOROCKS))
@@ -715,10 +715,10 @@ void View::DrawMap()
 		{
 			if (isClearNexus((*i)->loc))
 			{
-				drawRect.Rect.left = mapToImgX((*i)->loc.mtx - 1) - 4 * 2;
-				drawRect.Rect.right = drawRect.Rect.left + 4 * 5;
-				drawRect.Rect.top = mapToImgY((*i)->loc.mty + 1) - 4 * 2;
-				drawRect.Rect.bottom = drawRect.Rect.top + 4 * 5;
+				drawRect.Rect.left = mapToImgX((*i)->loc.mtx - 2) - 4 * 2 + 1;
+				drawRect.Rect.right = drawRect.Rect.left + 4 * 5 - 1;
+				drawRect.Rect.top = mapToImgY((*i)->loc.mty) - 4 * 2;
+				drawRect.Rect.bottom = drawRect.Rect.top + 4 * 5 - 1;
 				drawRect.Color0 = 0xffa4a4a4;
 				drawRect.Color1 = 0xffa4a4a4;
 				drawRect.Color2 = 0xffa4a4a4;
@@ -736,21 +736,26 @@ void View::DrawMap()
 				drawRect.Fill = true;
 				
 				g_rm.DrawCircle(
-								mapToImgX((*i)->loc.mtx) - 2,
-								mapToImgY((*i)->loc.mty) - 2, 
+								mapToImgX((*i)->loc.mtx - 1) - 2,
+								mapToImgY((*i)->loc.mty - 1) - 2, 
 								4.f * 13.f); // Photon Overcharge range
 			}
 			else
 			{
-				drawRect.Rect.left = mapToImgX((*i)->loc.mtx - 1) - 4 * 2;
-				drawRect.Rect.right = drawRect.Rect.left + 4 * 5;
-				drawRect.Rect.top = mapToImgY((*i)->loc.mty + 1) - 4 * 2;
-				drawRect.Rect.bottom = drawRect.Rect.top + 4 * 5;
-				drawRect.Color0 = 0xff4a40bb;
-				drawRect.Color1 = 0xffa4a4bb;
-				drawRect.Color2 = 0xff4a40bb;
-				drawRect.Color3 = 0xffa4a4bb;
+				drawRect.Rect.left = mapToImgX((*i)->loc.mtx - 2) - 4 * 2 + 1;
+				drawRect.Rect.right = drawRect.Rect.left + 4 * 5 - 1;
+				drawRect.Rect.top = mapToImgY((*i)->loc.mty) - 4 * 2;
+				drawRect.Rect.bottom = drawRect.Rect.top + 4 * 5 - 1;
+				drawRect.Color0 = 0xffdda0a0;
+				drawRect.Color1 = 0xffdda0a0;
+				drawRect.Color2 = 0xffdda0a0;
+				drawRect.Color3 = 0xffdda0a0;
 				g_rm.Draw(drawRect);
+
+				g_rm.DrawCircle(
+								mapToImgX((*i)->loc.mtx - 1) - 2,
+								mapToImgY((*i)->loc.mty - 1) - 2, 
+								4.f * 13.f); // Photon Overcharge range
 			}
 		}
 	}
@@ -837,66 +842,13 @@ void View::popScreenCoordinateMatrix()
 }
 
 
-void View::calcBases()
-{
-	// find the best nexus location for each base
-	for (list<Base*>::iterator b = m_sc2map->bases.begin(); b != m_sc2map->bases.end(); ++b)
-	{
-		// start from the average resource spot
-		// check 8x8 region
-		// if nexus can be placed, find avg resource distance
-		Base* base = *b;
-		point loc = base->loc;
-		
-		float minD = -1.f;
-		
-		for (int i = -11; i <= 11; ++i)
-		{
-			for (int j = -11; j <= 11; ++j)
-			{
-				loc.set(&(base->loc));
-				
-				loc.mx += i;  loc.my += j;
-				loc.mtx += i; loc.mty += j;
-				loc.mcx += i; loc.mcy += j;
-				loc.ptx += i; loc.pty += j;
-				loc.pcx += i; loc.pcy += j;
-				loc.ix += i;  loc.iy += j;
-				
-				if (isClearNexus(loc) && base)
-				{
-					float D = 0.f;
-					const list<Resource*>& baseResources = base->resources;
-					for (list<Resource*>::const_iterator r = baseResources.begin(); r != baseResources.end(); ++r)
-					{
-						//if ((*r)->type == MINERALS)
-						{
-							int dx = (*r)->loc.mtx - loc.mtx;
-							int dy = (*r)->loc.mty - loc.mty;
-							
-							float d = sqrt((float)(dx * dx + dy * dy));
-							D += d;
-						}
-					}
-					if (D > 0 && (minD < 0.f || D < minD))
-					{
-						minD = D;
-						base->loc.set(&loc);
-					} 
-				}
-			}
-		}
-	}
-}
-
-
 bool View::isClearNexus(const point& a_loc)
 {
 	for (int i = -2; i <= 2; ++i)
 	{
 		for (int j = -2; j <= 2; ++j)
 		{
-			if (!IsPathable(a_loc.ptx + i, a_loc.pty + j, PATH_BUILDABLE_MAIN))
+			if (!IsPathable(a_loc.ptx + i - 1, a_loc.pty + j - 1, PATH_BUILDABLE_MAIN))
 				return false;
 		}
 	}
@@ -968,7 +920,6 @@ void View::SetMap(SC2Map* a_map)
   releaseBuffer();
 
   CreatePathingLayout();
-  calcBases();
 }
 
 

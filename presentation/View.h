@@ -66,7 +66,6 @@ protected:
   // TODO - roll into analyser algorithms
   // Nexus positioning
   bool isClearNexus(const point& a_loc);
-  void calcBases();
   	
   // TODO - roll into analyser algorithms
   // Test if a cell of the map is pathable

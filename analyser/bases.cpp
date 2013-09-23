@@ -87,6 +87,80 @@ void SC2Map::locateBases() {
       b->loc.mSet( mxTotal, myTotal );
     }
   }
+
+  // calculate townhall position
+  // brute force, because maps are quite small and
+  // I don't wanna recur.  This is insignificant.
+  int townhallFoot[] = {
+    -2, -2, // these first for minor performance
+    -2,  2,
+     2, -2,
+     2,  2,
+     0,  0,
+    -2, -1,
+    -2,  0,
+    -2,  1,
+    -1, -2,
+    -1, -1,
+    -1,  0,
+    -1,  1,
+    -1,  2,
+     0, -2,
+     0, -1,
+     0,  1,
+     0,  2,
+     1, -2,
+     1, -1,
+     1,  0,
+     1,  1,
+     1,  2,
+     2, -1,
+     2,  0,
+     2,  1};
+
+  for (list<Base*>::const_iterator itr = this->bases.begin();
+        itr != this->bases.end();
+        ++itr)
+  {
+    Base *b = *itr;
+    bool good = true;
+    point bestCell;
+    point test;
+    int bestDist = 0x10000000; // > 256*2*any sane num minerals
+
+    for (int y = 2; y < cyDimPlayable; y++) {
+      for (int x = 2; x < cxDimPlayable; x++) {
+        good = true;
+        for (int j = 0; j < 50; j+=2) {
+          test.pcSet(x + townhallFoot[j], y + townhallFoot[j + 1]);
+          if (!isPlayableCell(&test)) {
+            good = false; break;
+          }
+          if (!getPathing(&test, PATH_BUILDABLE_MAIN)) {
+            good = false; break;
+          }
+        }
+        if (good) {
+          int dist = 0;
+          for( list<Resource*>::const_iterator itrRes = b->resources.begin();
+               itrRes != b->resources.end();
+               ++itrRes )
+          {
+            Resource* r = *itrRes;
+            // minimize sum l -- should be ~68 for 8m2g
+            dist += (int)sqrt((r->loc.pcx - x)*(r->loc.pcx - x) + (r->loc.pcy - y)*(r->loc.pcy - y));
+          }
+          if (dist < bestDist) {
+            bestDist = dist;
+            bestCell.pcSet(x, y);
+          }
+        }
+      }
+    }
+
+    //b->loc.mcSet(bestCell.mcx, bestCell.mcy);
+    b->loc.mSet(bestCell.mx, bestCell.my);
+  }
 }
 
 
