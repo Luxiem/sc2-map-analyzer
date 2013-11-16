@@ -1,8 +1,12 @@
 #pragma once
 
 
+#define QUOTEHELPER( x ) #x
+#define QUOTEMACRO( x ) QUOTEHELPER( x )
+
+
 // Map Analyser version
-#define VALG 1.62
+#define VALG 1.8
 
 
 #include <string>
@@ -38,7 +42,7 @@ public:
 	
   // TODO
   // UI Controller
-	static void IncPath(int a_inc);
+  static void SetPath(int a_pathSpawnA, int a_pathBaseA, int a_pathSpawnB, int a_pathBaseB);
 
   // User input
 	static void OnLeftMouseDown(int a_x, int a_y);
@@ -54,6 +58,9 @@ public:
 
   //
   static void ReloadConfig();
+
+  //
+  static void Log(const char* a_msg);
 		
 protected:
 	

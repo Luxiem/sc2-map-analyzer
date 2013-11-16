@@ -116,13 +116,15 @@ void Common::beginLoadMap(std::string a_fileName)
 	s_sc2map->computeOpenness();
 	s_sc2map->locateChokes();
 	s_sc2map->analyzeBases();
-	
+	  
 	// TODO - View
 	int bufferWidth = s_sc2map->txDimPlayable * 4 + 32;
 	int bufferHeight = s_sc2map->tyDimPlayable * 4 + 240;
 
   // Apply loaded map to view
   s_view->SetMap(s_sc2map);
+
+  s_controller->OnMapLoaded(s_sc2map);
 }
 
 
@@ -341,13 +343,13 @@ void Common::OnScrollWheel(int a_delta)
 void Common::OnClientAreaChanged(int a_x, int a_y)
 { 
   s_view->OnClientAreaChanged(a_x, a_y);
-  s_controller->m_core->OnClientAreaChanged(a_x, a_y); 
+  s_controller->OnWindowSizeChanged(a_x, a_y); 
 }
 
 
-void Common::IncPath(int a_inc)
+void Common::SetPath(int a_pathSpawnA, int a_pathBaseA, int a_pathSpawnB, int a_pathBaseB)
 {
-  s_view->IncPath(a_inc);
+  s_view->SetPath(a_pathSpawnA, a_pathBaseA, a_pathSpawnB, a_pathBaseB);
 }
 
 
@@ -360,4 +362,10 @@ bool Common::IsPathable(int i, int j, int t)
 	if (j < 0) return false;
 	if (j >= s_sc2map->cyDimPlayable) return false;
 	return s_sc2map->mapPathing[NUM_PATH_TYPES * (j * s_sc2map->cxDimPlayable + i) + t];
+}
+
+
+void Common::Log(const char* a_msg)
+{
+  s_controller->Log(a_msg);
 }

@@ -13,9 +13,6 @@ Switch::Switch(Declaration a_decl)
 
   m_decl = a_decl;
 
-  m_rect.left = m_decl.HMargin;
-  m_rect.top = m_decl.VMargin;
-  
   m_rect.right = m_rect.left + 20;
   m_rect.bottom = m_rect.top + 20;
 
@@ -199,11 +196,8 @@ void Switch::SetText(const char* text, unsigned long colour)
 
 void Switch::SetPosition(int a_x, int a_y)
 {
-  m_decl.HMargin = a_x;
-  m_decl.VMargin = a_y;
-
-  m_rect.left = m_decl.HMargin;
-  m_rect.top = m_decl.VMargin;
+  m_rect.left = a_x;
+  m_rect.top = a_y;
   
   m_rect.right = m_rect.left + 20;
   m_rect.bottom = m_rect.top + 20;

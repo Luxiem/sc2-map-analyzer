@@ -4,6 +4,7 @@
 #include <vector>
 #include "UVFontManager.h"
 #include "UVRectManager.h"
+#include "Container.h"
 
 
 namespace UV
@@ -12,7 +13,7 @@ namespace UV
   class Group;
   class Widget;
 
-  class Core
+  class Core : public Container
   {
   public:
     Core();
@@ -30,14 +31,14 @@ namespace UV
 
     Page* CreatePage();
 
-	  bool OnLeftMouseDown(int a_x, int a_y);
-	  void OnLeftMouseUp(int a_x, int a_y);
-	  void OnMouseMove(int a_x, int a_y);
-	  void OnScrollWheel(int a_delta);
+	  //bool OnLeftMouseDown(int a_x, int a_y);
+	  //void OnLeftMouseUp(int a_x, int a_y);
+	  //void OnMouseMove(int a_x, int a_y);
+	  //void OnScrollWheel(int a_delta);
 
   protected:
 
-    Page* m_page;
+    std::vector<Page*> m_pages;
 
     FontManager* m_fm;
     RectManager* m_rm;

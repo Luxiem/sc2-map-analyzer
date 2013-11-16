@@ -241,6 +241,7 @@ public:
   list<Watchtower*>  watchtowers;
   list<Resource*>    resources;
   list<Destruct*>    destructs;
+  list<Collapsible*> collapsibles;
   list<LoSB*>        losbs;
   list<point>        pathingFillsToRender;
   list<point>        opennessNeighborhoodsToRender;

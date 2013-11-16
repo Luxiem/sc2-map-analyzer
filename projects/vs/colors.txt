@@ -28,17 +28,17 @@ default = 0xbbccaa
 #
 ##############################
 
-oplo1 = 0xff662b
-oplo2 = 0x66ff2c
-oplo3 = 0x6600ff
-
-opmid1 = 0xff662b
-opmid2 = 0x66ff2c
-opmid3 = 0x6600ff
-
 ophi1 = 0xff662b
 ophi2 = 0x66ff2c
 ophi3 = 0x6600ff
+
+opmid1 = 0xff7b49
+opmid2 = 0x7bff49
+opmid3 = 0x7b24ff
+
+oplo1 = 0xff9066
+oplo2 = 0x90ff66
+oplo3 = 0x9047ff
 
 
 
@@ -49,14 +49,14 @@ ophi3 = 0x6600ff
 #
 ##############################
 
-LoSB = 0x4646ff
-destructable = 0xaabbaa
+LoSB = 0x823d92
+destructable = 0x374762
 collapsible = 0xaabbaa
 
 terrainElev0 = 0.00, 0.00, 0.00
-terrainElev1 = 0.30, 0.30, 0.30
-terrainElev2 = 0.45, 0.45, 0.45
-terrainElev3 = 0.95, 0.95, 0.95
+terrainElev3 = 0.70, 0.70, 0.70
+terrainElev2 = 0.80, 0.80, 0.80
+terrainElev1 = 0.90, 0.90, 0.90
 
 
 

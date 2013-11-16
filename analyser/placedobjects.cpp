@@ -285,12 +285,19 @@ void SC2Map::processPlacedObject( ObjectMode objMode, TiXmlElement* object )
     type.assign( "nobuild" );
     fta.type.assign( type );
     footsToApply.push_back( fta );
-
+    
     type.assign( "losb" );
     fta.type.assign( type );
     footsToApply.push_back( fta );
 
+    type.assign( "collapsible_source" );
+    fta.type.assign( type );
+    footsToApply.push_back( fta );
 
+    type.assign( "collapsible_target" );
+    fta.type.assign( type );
+    footsToApply.push_back( fta );
+    
     if( strcmp( strType, poWatchtower ) == 0 )
     {
       Watchtower* wt = new Watchtower;
@@ -501,14 +508,45 @@ void SC2Map::applyFootprint( point* c, float rot, string* type, string* name )
   // rotation, use that, otherwise default to
   // the one footprint
   string specificRot( *name );
-  if( rot > 45.01f && rot <= 135.01f ) {
-    specificRot.append( footprintRot270cw );
+  int offX = 0;
+  int offY = 0;
+  if ( *type == "collapsible_source" || *type == "collapsible_target" )
+  {
+    if ( *type == "collapsible_target" )
+    {
+      if (rot > 44.f && rot < 46.f)
+      {
+        offX = 4;
+        offY = 4;
+      }
+      else if (rot > 134.f && rot < 136.f)
+      {
+        offX = -4;
+        offY = 4;
+      }
+      if (rot > 224.f && rot < 226.f)
+      {
+        offX = -4;
+        offY = -4;
+      }
+      else if (rot > 314.f && rot < 316.f)
+      {
+        offX = 4;
+        offY = -4;
+      }
+    }
+  }
+  else
+  {
+    if( rot > 45.01f && rot <= 135.01f ) {
+      specificRot.append( footprintRot270cw );
 
-  } else if( rot > 135.01f && rot <= 225.01f ) {
-    specificRot.append( footprintRot180cw );
+    } else if( rot > 135.01f && rot <= 225.01f ) {
+      specificRot.append( footprintRot180cw );
 
-  } else if( rot > 225.01f && rot <= 315.01f ) {
-    specificRot.append( footprintRot90cw );
+    } else if( rot > 225.01f && rot <= 315.01f ) {
+      specificRot.append( footprintRot90cw );
+    }
   }
 
 
@@ -541,7 +579,8 @@ void SC2Map::applyFootprint( point* c, float rot, string* type, string* name )
   // config, so if we don't have one by now, just quit
   if( foot == NULL )
   {
-    return;
+    printError( "\"%s\" not found in footprints.", name->data() );
+    return;// false;
   }
 
   for( list<int>::iterator itr = foot->relativeCoordinates.begin();
@@ -564,7 +603,7 @@ void SC2Map::applyFootprint( point* c, float rot, string* type, string* name )
 
     point dc;
     //dc.pcSet( c->pcx + dx, c->pcy + dy );
-    dc.mSet( c->mx + dx + 0.25f, c->my + dy + 0.25f );
+    dc.mSet( c->mx + dx + offX + 0.25f, c->my + dy + offY + 0.25f );
 
     if( !isPlayableCell( &dc ) )
     {
@@ -589,6 +628,25 @@ void SC2Map::applyFootprint( point* c, float rot, string* type, string* name )
       Destruct* destruct = new Destruct;
       destruct->loc.set( &dc );
       destructs.push_back( destruct );
+
+    } else if( *type == "collapsible_source" ) {
+      // remove from WITHROCKS pathing types
+      setPathing( &dc, PATH_GROUND_WITHROCKS,             false );
+      setPathing( &dc, PATH_CWALK_WITHROCKS,              false );
+      setPathing( &dc, PATH_GROUND_WITHROCKS_NORESOURCES, false );
+      Collapsible* collapsible = new Collapsible;
+      collapsible->loc.set( &dc );
+      collapsible->state = true;
+      collapsibles.push_back( collapsible );
+
+    } else if( *type == "collapsible_target" ) {
+      // 
+      setPathing( &dc, PATH_BUILDABLE,                    false );
+      setPathing( &dc, PATH_BUILDABLE_MAIN,               false );
+      Collapsible* collapsible = new Collapsible;
+      collapsible->loc.set( &dc );
+      collapsible->state = false;
+      collapsibles.push_back( collapsible );
 
     } else if( *type == "resource" ) {
       // remove all pathing except WITHOUTRESOURCES
@@ -620,4 +678,6 @@ void SC2Map::applyFootprint( point* c, float rot, string* type, string* name )
       exit( -1 );
     }
   }
+
+  return;// true;
 }

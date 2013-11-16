@@ -4,8 +4,12 @@
 #include "UV/UV.h"
 #include <GL/glew.h>
 #include <GL/gl.h>
+#include "FBORenderTexture.h"
 #include "Common.h" // siege path stuff
-#include "pngwriter.h"
+#include <IL/il.h>
+#include <IL/ilut.h>
+#include <IL/devil_internal_exports.h>
+#include <sstream>
 
 
 #define DWORD_ARGB(a,r,g,b) \
@@ -22,18 +26,18 @@ static inline DWORD ColorToDword(Color* a_color, int a = 0xff)
 
 View::View()
 {
-  m_renderedTexture = 0;
-  m_FramebufferName = 0;
   m_sc2map = 0;
   m_controller = 0;
 
-  bufferWidth = 256;
-  bufferHeight = 256;
-  windowWidth = 256;
-  windowHeight = 256;
+  m_bufferWidth = 256;
+  m_bufferHeight = 256;
+  m_windowWidth = 256;
+  m_windowHeight = 256;
 
-  m_pathN = 0;
-  m_pathT = 0;
+  m_dG = 0.f;
+  m_dC = 0.f;
+
+  m_fbo = 0;
 }
 
 
@@ -53,6 +57,8 @@ void View::Init(Controller* a_controller)
 	// Enable Alpha
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  g_fm.Init();
 }
 
 
@@ -64,67 +70,20 @@ void View::Done()
 
 void View::releaseBuffer()
 {
-	if (m_FramebufferName)
-	{
-		glDeleteFramebuffers(1, &m_FramebufferName);
-		m_FramebufferName = 0;
-	}
-	
-	if (m_renderedTexture)
-	{
-		glDeleteTextures(1, &m_renderedTexture);
-		m_renderedTexture = 0;
-	}
+	if (m_fbo) 
+  {
+    delete m_fbo;
+    m_fbo = 0;
+  }
 }
 
 
 void View::createBuffer()
 {
 	// Check for FBO and destroy?
-	if (m_FramebufferName)
-	{
-		glDeleteFramebuffers(1, &m_FramebufferName);
-		m_FramebufferName = 0;
-	}
-	
-	if (m_renderedTexture)
-	{
-		glDeleteTextures(1, &m_renderedTexture);
-		m_renderedTexture = 0;
-	}
-	
-	// Create Render Target (once)
-	glEnable(GL_TEXTURE_2D);
-	
-	glGenFramebuffers(1, &m_FramebufferName);
-	glBindFramebuffer(GL_FRAMEBUFFER, m_FramebufferName);
-	
-	// The texture we're going to render to
-	glGenTextures(1, &m_renderedTexture);
-	
-	// "Bind" the newly created texture : all future texture functions will modify this texture
-	glBindTexture(GL_TEXTURE_2D, m_renderedTexture);
-	
-	// Give an empty image to OpenGL ( the last "0" )
-	glTexImage2D(
-				 GL_TEXTURE_2D, 
-				 0, 
-				 GL_RGBA8, //GL_RGB, 
-				 bufferWidth, 
-				 bufferHeight, 
-				 0, 
-				 GL_RGBA, //GL_RGB, 
-				 GL_UNSIGNED_BYTE, 
-				 0);
-	
-	// Poor filtering. Needed !
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    
-	// Set "renderedTexture" as our colour attachement #0
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_renderedTexture, 0);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
+	releaseBuffer();
+  
+	m_fbo = new FBORenderTexture(m_bufferWidth, m_bufferHeight);
 }
 
 
@@ -135,41 +94,45 @@ void View::DrawScreen()
 	glClear(GL_COLOR_BUFFER_BIT);	
 	
 	// Render Frame Map
-	if (m_FramebufferName == 0)
-	{
-		createBuffer();
-	} 
-	
   if (m_sc2map)
 	{	
+  	if (m_fbo == 0)
+	  {
+		  createBuffer();
+    }	
+
 		// Set Render Target and Draw Map
-		glBindFramebuffer(GL_FRAMEBUFFER, m_FramebufferName);
+		m_fbo->start();
+
+    if (m_controller)
+      m_controller->m_core->OnClientAreaChanged(m_bufferWidth, m_bufferHeight);
     	
 	  // Always check that our framebuffer is ok
 	  if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
 		{
-      glViewport(0, 0, bufferWidth, bufferHeight);
+      // viewport
+      glViewport(0, 0, m_bufferWidth, m_bufferHeight);
 		  glClearColor( 0.f, 0.f, 0.f, 1.f );
 		  glClear( GL_COLOR_BUFFER_BIT );
 		
-		  pushScreenCoordinateMatrix();
+		  // Set ortho
+	    glPushAttrib(GL_TRANSFORM_BIT);
+	    glMatrixMode(GL_PROJECTION);
+	    glPushMatrix();
+	    glLoadIdentity();
+	    gluOrtho2D(0, m_bufferWidth, 0, m_bufferHeight);
+	    glPopAttrib();
 
-      if (m_controller)
-        m_controller->m_core->OnClientAreaChanged(bufferWidth, bufferHeight);
-		
-		  DrawMap();
-		
-		  popScreenCoordinateMatrix();
+  		DrawMap();		
     }
+
+    m_fbo->stop();
   }
 	
-	// Restore frame buffer
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  
 	if (m_controller)
-    m_controller->m_core->OnClientAreaChanged(windowWidth, windowHeight);
+    m_controller->m_core->OnClientAreaChanged(m_windowWidth, m_windowHeight);
 
-	glViewport(0, 0, windowWidth, windowHeight);
+	glViewport(0, 0, m_windowWidth, m_windowHeight);
 	glClearColor( 0.2f, 0.2f, 0.2f, 1.0f );
 	glClear( GL_COLOR_BUFFER_BIT );
 	
@@ -177,7 +140,7 @@ void View::DrawScreen()
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	gluOrtho2D(0, windowWidth, 0, windowHeight);
+	gluOrtho2D(0, m_windowWidth, 0, m_windowHeight);
 	glPopAttrib();
 	
   if (!m_sc2map)
@@ -186,24 +149,14 @@ void View::DrawScreen()
   }
 
 	// Display Target as texture
-	if (m_FramebufferName)
+	if (m_fbo)
 	{
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, m_renderedTexture);
-		
-		glBegin(GL_QUADS);
-        glColor4f( 1.0f, 1.0f, 1.0f, 1.f );
-		
-        int x = (windowWidth - bufferWidth - 270) / 2 + 270;
-        int y = (windowHeight - bufferHeight) / 2;
-		
-        glTexCoord2f(0.0f, 0.0f); glVertex3f(x,  y,  1.0f);  // Bottom Left Of The Texture and Quad
-        glTexCoord2f(1.0f, 0.0f); glVertex3f(x + bufferWidth,  y,  1.0f);  // Bottom Right Of The Texture and Quad
-        glTexCoord2f(1.0f, 1.0f); glVertex3f(x + bufferWidth,  y + bufferHeight,  1.0f);  // Top Right Of The Texture and Quad
-        glTexCoord2f(0.0f, 1.0f); glVertex3f(x,  y + bufferHeight,  1.0f);  // Top Left Of The Texture and Quad
+    int x = (m_windowWidth - m_bufferWidth - 270) / 2 + 270;
+    int y = (m_windowHeight - m_bufferHeight) / 2;
 
-		glEnd();
-		glDisable(GL_TEXTURE_2D);
+    glEnable(GL_TEXTURE_2D);
+    m_fbo->showTexture(0, m_bufferWidth, m_bufferHeight, x, y );
+    glDisable(GL_TEXTURE_2D);
 	}
 	
 	// Unbind texture
@@ -215,7 +168,7 @@ void View::DrawScreen()
 	decl2.Rect.left = 0;
 	decl2.Rect.right = 270;
 	decl2.Rect.top = 0;
-	decl2.Rect.bottom = windowHeight;
+	decl2.Rect.bottom = m_windowHeight;
 	decl2.Color0 = 0xff8a8a8a;
 	decl2.Color1 = 0xff8a8a8a;
 	decl2.Color2 = 0xff8a8a8a;
@@ -225,7 +178,7 @@ void View::DrawScreen()
 	decl2.Rect.left = 270;
 	decl2.Rect.right = 276;
 	decl2.Rect.top = 0;
-	decl2.Rect.bottom = windowHeight;
+	decl2.Rect.bottom = m_windowHeight;
 	decl2.Color0 = 0xff555555;
 	decl2.Color1 = 0xff555555;
 	decl2.Color2 = 0xff555555;
@@ -235,7 +188,7 @@ void View::DrawScreen()
 	decl2.Rect.left = 271;
 	decl2.Rect.right = 275;
 	decl2.Rect.top = 0;
-	decl2.Rect.bottom = windowHeight;
+	decl2.Rect.bottom = m_windowHeight;
 	decl2.Color0 = 0xfffafafa;
 	decl2.Color1 = 0xfffafafa;
 	decl2.Color2 = 0xffaaaaaa;
@@ -308,8 +261,9 @@ void View::DrawMap()
 	y1 += 20;
 	
 	// Footer
-	a = std::string("SC Map Analyser for HotS alpha, algorithms v1.62");
-	g_fm.Draw(x1, bufferHeight - 20, 2, a.c_str());
+	a = std::string("SC Map Analyser for HotS alpha, algorithms ");
+  a += std::string(QUOTEMACRO(VALG));
+	g_fm.Draw(x1, m_bufferHeight - 20, 2, a.c_str());
 	
 	// Map grids:
 	
@@ -558,75 +512,75 @@ void View::DrawMap()
 			drawRect.Rect.right = drawRect.Rect.left + 4;
 			drawRect.Rect.top = mapToImgY((*i)->loc.mty + 1);
 			drawRect.Rect.bottom = drawRect.Rect.top + 4;
+      // TODO Colour
 			drawRect.Color0 = 0xff4040ff;
 			drawRect.Color1 = 0xff4040ff;
 			drawRect.Color2 = 0xff4040ff;
 			drawRect.Color3 = 0xff4040ff;
 			g_rm.Draw(drawRect);
 		}
+
+		for (list<Collapsible*>::iterator i = m_sc2map->collapsibles.begin(); i != m_sc2map->collapsibles.end(); ++i)
+		{
+			drawRect.Rect.left = mapToImgX((*i)->loc.mtx - 1);
+			drawRect.Rect.right = drawRect.Rect.left + 4;
+			drawRect.Rect.top = mapToImgY((*i)->loc.mty + 1);
+			drawRect.Rect.bottom = drawRect.Rect.top + 4;
+
+      if ((*i)->state)
+      {
+			  drawRect.Color0 = 0xff4040ff;
+			  drawRect.Color1 = 0xff4040ff;
+			  drawRect.Color2 = 0xff4040ff;
+			  drawRect.Color3 = 0xff4040ff;
+
+        // ?
+        drawRect.Rect.left -= 4;
+        drawRect.Rect.right -= 4;
+        drawRect.Rect.top += 4;
+        drawRect.Rect.bottom += 4;
+      }
+      else
+      {
+			  drawRect.Color0 = 0xff50ff50;
+			  drawRect.Color1 = 0xff50ff50;
+			  drawRect.Color2 = 0xff50ff50;
+			  drawRect.Color3 = 0xff50ff50;
+      }
+			
+      g_rm.Draw(drawRect);
+		}
 	}
 	
 	// Pathing
-  if (m_controller->ShowPathingLayer() && m_mainPairs.size() > m_pathN && m_natPairs.size() > m_pathN)
+  if (m_controller->ShowPathingLayer() && m_pathC.size())
 	{
-		std::list<point> path;
-		point p0, p1;
     DWORD c1 = ColorToDword(m_sc2map->getColor("shortestPathAir"));
     DWORD c2 = ColorToDword(m_sc2map->getColor("shortestPathGround"));
     DWORD c3 = ColorToDword(m_sc2map->getColor("shortestPathCWalk")); 
 		
-		if (m_pathT == 1)
-		{
-			p0 = m_natPairs[m_pathN].first->loc;
-			p1 = m_natPairs[m_pathN].second->loc;
-		}
-		else
-		{
-			p0 = m_mainPairs[m_pathN].first->loc;
-			p1 = m_mainPairs[m_pathN].second->loc;
-		}
-		
-		float d0 = sqrt((p0.mx - p1.mx) * (p0.mx - p1.mx) + (p0.my - p1.my) * (p0.my - p1.my));
-		{
-			point pp0 = p0;
-			point pp1 = p1;
-			pp0.mx = mapToImgX(p0.mx - 1);
-			pp0.my = mapToImgY(p0.my + 1);
-			pp1.mx = mapToImgX(p1.mx - 1);
-			pp1.my = mapToImgY(p1.my + 1);
-			path.push_back(pp0);
-			path.push_back(pp1);
-		}
-		g_rm.DrawPath(path, -2, c1);
-		path.clear();
+    float d0 = 0.f;
+		//float d0 = sqrt((p0.mx - p1.mx) * (p0.mx - p1.mx) + (p0.my - p1.my) * (p0.my - p1.my));
+		//{
+		//	point pp0 = p0;
+		//	point pp1 = p1;
+		//	pp0.mx = mapToImgX(p0.mx - 1);
+		//	pp0.my = mapToImgY(p0.my + 1);
+		//	pp1.mx = mapToImgX(p1.mx - 1);
+		//	pp1.my = mapToImgY(p1.my + 1);
+		//	path.push_back(pp0);
+		//	path.push_back(pp1);
+		//}
+		//g_rm.DrawPath(path, -2, c1);
+		//path.clear();
 
-		{
-			path.push_back(p1);
-		}
-    float d1 = pathTo(p0, p1, PATH_GROUND_WITHROCKS, path);
-		for (std::list<point>::iterator k = path.begin(); k != path.end(); ++k)
-		{
-			(*k).mx = mapToImgX((*k).mx - 1);
-			(*k).my = mapToImgY((*k).my + 1);
-		}
-		g_rm.DrawPath(path, 0, c2);
-		path.clear();
-		
-		{
-			path.push_back(p1);
-		}
-		float d2 = pathTo(p0, p1, PATH_CWALK_WITHROCKS, path);
-		for (std::list<point>::iterator k = path.begin(); k != path.end(); ++k)
-		{
-			(*k).mx = mapToImgX((*k).mx - 1);
-			(*k).my = mapToImgY((*k).my + 1);
-		}
-		g_rm.DrawPath(path, 2, c3);
-		path.clear();		
-		
+		g_rm.DrawPath(m_pathG, 0, c2);
+		g_rm.DrawPath(m_pathC, 2, c3);
+    		
 		// Legend
 		std::string title = "";
 		
+    /*
 		if (m_pathT == 1)
 		{
 			std::string a = "";
@@ -655,10 +609,21 @@ void View::DrawMap()
 			a += ")";
 			title = a;
 		}
+    */
+
+		std::string a = "";
+		a += m_spawnNameA;
+    a += " ";
+    a += m_baseNameA;
+    a += " to ";
+		a += m_spawnNameB;
+    a += " ";
+    a += m_baseNameB;
+		title = a;
 		
-		g_fm.Draw(bufferWidth - 235, 34, 1, title.c_str());
+		g_fm.Draw(m_bufferWidth - 235, 34, 1, title.c_str());
 		
-		drawRect.Rect.left = bufferWidth - 233;
+		drawRect.Rect.left = m_bufferWidth - 233;
 		drawRect.Rect.right = drawRect.Rect.left + 12;
 		drawRect.Rect.top = 55;
 		drawRect.Rect.bottom = drawRect.Rect.top + 12;
@@ -668,7 +633,7 @@ void View::DrawMap()
 		drawRect.Color3 = c1;
 		g_rm.Draw(drawRect);
 		
-		drawRect.Rect.left = bufferWidth - 233;
+		drawRect.Rect.left = m_bufferWidth - 233;
 		drawRect.Rect.right = drawRect.Rect.left + 12;
 		drawRect.Rect.top = 79;
 		drawRect.Rect.bottom = drawRect.Rect.top + 12;
@@ -678,7 +643,7 @@ void View::DrawMap()
 		drawRect.Color3 = c2;
 		g_rm.Draw(drawRect);
 		
-		drawRect.Rect.left = bufferWidth - 233;
+		drawRect.Rect.left = m_bufferWidth - 233;
 		drawRect.Rect.right = drawRect.Rect.left + 12;
 		drawRect.Rect.top = 103;
 		drawRect.Rect.bottom = drawRect.Rect.top + 12;
@@ -692,19 +657,19 @@ void View::DrawMap()
 		title = std::string("Air: ") + std::string(sp);
 		_snprintf(sp, 128, "%.1f", d0 / OVERLORD_SPEED);
 		title += std::string(" (Overlord: ") + std::string(sp) + std::string("s)");
-		g_fm.Draw(bufferWidth - 215, 67, 2, title.c_str());
+		g_fm.Draw(m_bufferWidth - 215, 67, 2, title.c_str());
 		
-		_snprintf(sp, 128, "%.1f", d1);
+		_snprintf(sp, 128, "%.1f", m_dG);
 		title = std::string("Ground: ") + std::string(sp);
-		_snprintf(sp, 128, "%.1f", d1 / PROBE_SPEED);
+		_snprintf(sp, 128, "%.1f", m_dG / PROBE_SPEED);
 		title += std::string(" (Probe: ") + std::string(sp) + std::string("s)");
-		g_fm.Draw(bufferWidth - 215, 91, 2, title.c_str());
+		g_fm.Draw(m_bufferWidth - 215, 91, 2, title.c_str());
 		
-		_snprintf(sp, 128, "%.1f", d2);
+		_snprintf(sp, 128, "%.1f", m_dC);
 		title = std::string("Cliff: ") + std::string(sp);
-		_snprintf(sp, 128, "%.1f", d2 / REAPER_SPEED);
+		_snprintf(sp, 128, "%.1f", m_dC / REAPER_SPEED);
 		title += std::string(" (Reaper: ") + std::string(sp) + std::string("s)");
-		g_fm.Draw(bufferWidth - 215, 115, 2, title.c_str());
+		g_fm.Draw(m_bufferWidth - 215, 115, 2, title.c_str());
 	}
 	
 	
@@ -816,32 +781,6 @@ void View::DrawMap()
 }
 
 
-/// A fairly straight forward function that pushes
-/// a projection matrix that will make object world 
-/// coordinates identical to window coordinates.
-void View::pushScreenCoordinateMatrix() 
-{
-	glPushAttrib(GL_TRANSFORM_BIT);
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	gluOrtho2D(0, bufferWidth, 0, bufferHeight);
-	glPopAttrib();
-}
-
-
-
-/// Pops the projection matrix without changing the current
-/// MatrixMode.
-void View::popScreenCoordinateMatrix() 
-{
-	glPushAttrib(GL_TRANSFORM_BIT);
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glPopAttrib();
-}
-
-
 bool View::isClearNexus(const point& a_loc)
 {
 	for (int i = -2; i <= 2; ++i)
@@ -903,8 +842,8 @@ int View::mapToImgY(int y)
 void View::OnClientAreaChanged(int a_width, int a_height)
 {
 	// set bounds
-	windowWidth = a_width;
-	windowHeight = a_height;
+	m_windowWidth = a_width;
+	m_windowHeight = a_height;
 }
 
 
@@ -913,94 +852,100 @@ void View::SetMap(SC2Map* a_map)
   m_sc2map = a_map;
   if (m_sc2map)
   {
-	  bufferWidth = m_sc2map->txDimPlayable * 4 + 32;
-	  bufferHeight = m_sc2map->tyDimPlayable * 4 + 240;
+	  m_bufferWidth = m_sc2map->txDimPlayable * 4 + 32;
+	  m_bufferHeight = m_sc2map->tyDimPlayable * 4 + 240;
   }
 
   releaseBuffer();
 
-  CreatePathingLayout();
+  SetPath(0, 0, 1, 0);
 }
 
 
-void View::IncPath(int a_inc)
+void View::SetPath(int a_pathSpawnA, int a_pathBaseA, int a_pathSpawnB, int a_pathBaseB)
 {
-	m_pathN += a_inc;
-	if (m_pathT == 1)
-	{
-		if (m_pathN == m_natPairs.size())
-		{
-			m_pathN = 0;
-			m_pathT = 0;
-		}
-		else if (m_pathN < 0)
-		{
-			m_pathN = m_mainPairs.size() - 1;
-			m_pathT = 0;
-		}
-	}
-	else
-	{
-		if (m_pathN == m_mainPairs.size())
-		{
-			m_pathN = 0;
-			m_pathT = 1;
-		}
-		else if (m_pathN < 0)
-		{
-			m_pathN = m_natPairs.size() - 1;
-			m_pathT = 1;
-		}
-	}
-}
+  int spawnCounter = 0;
+  Base* A = 0;
+  Base* B = 0;
+  char* names[] = { "main", "nat", "3rd", "4th" };
 
-
-void View::CreatePathingLayout()
-{
-	// Enumerate bases
-	std::vector<Base*> mains;
-	std::vector<Base*> nats;
-	//for (list<Base*>::iterator i = m_sc2map->bases.begin(); i != m_sc2map->bases.end(); ++i)
-	//{
- //   Base* base = *i;
-	//	if (base->numExpo == MAIN_EXPO) 
- //     mains.push_back(base);
-	//	else if (base->numExpo == NATURAL_EXPO) 
- //     nats.push_back(base);
-	//}
-	for (list<StartLoc*>::iterator i = m_sc2map->startLocs.begin(); i != m_sc2map->startLocs.end(); ++i)
-	{
-    if ((*i)->mainBase)
+  for (list<StartLoc*>::iterator i = m_sc2map->startLocs.begin(); i != m_sc2map->startLocs.end(); ++i)
+  {
+    if (spawnCounter == a_pathSpawnA)
     {
-      mains.push_back((*i)->mainBase);
+      if ((*i)->mainBase && a_pathBaseA == 0)
+      { 
+        A = (*i)->mainBase;
+        m_spawnNameA = (*i)->name;
+        m_baseNameA = names[a_pathBaseA];
+      }
+      else if ((*i)->natBase && a_pathBaseA == 1)
+      { 
+        A = (*i)->natBase;
+        m_spawnNameA = (*i)->name;
+        m_baseNameA = names[a_pathBaseA];
+      }
+      else if ((*i)->thirdBase && a_pathBaseA == 2)
+      { 
+        A = (*i)->thirdBase;
+        m_spawnNameA = (*i)->name;
+        m_baseNameA = names[a_pathBaseA];
+      }
     }
 
-    if ((*i)->natBase)
+    if (spawnCounter == a_pathSpawnB)
     {
-      nats.push_back((*i)->natBase);
+      if ((*i)->mainBase && a_pathBaseB == 0)
+      { 
+        B = (*i)->mainBase;
+        m_spawnNameB = (*i)->name;
+        m_baseNameB = names[a_pathBaseB];
+      }
+      else if ((*i)->natBase && a_pathBaseB == 1)
+      { 
+        B = (*i)->natBase;
+        m_spawnNameB = (*i)->name;
+        m_baseNameB = names[a_pathBaseB];
+      }
+      else if ((*i)->thirdBase && a_pathBaseB == 2)
+      { 
+        B = (*i)->thirdBase;
+        m_spawnNameB = (*i)->name;
+        m_baseNameB = names[a_pathBaseB];
+      }
     }
+
+    ++spawnCounter;
   }
-	
-	// Enumerate path pairs
-	m_mainPairs.clear();
-	for (vector<Base*>::iterator i = mains.begin(); i != mains.end(); ++i)
-	{
-		for (vector<Base*>::iterator j = i + 1; j != mains.end(); ++j)
-		{
-			std::pair< Base*, Base* > b = std::pair< Base*, Base* >((Base*)(*i), (Base*)*j);
-			m_mainPairs.push_back( b );
-		}
-	}
+
+
+  if (A && B)
+  {
+    m_pathG.clear();
+    m_pathC.clear();
+
+    point p0 = A->loc;
+    point p1 = B->loc;
     
-	m_natPairs.clear();
-	for (vector<Base*>::iterator i = nats.begin(); i != nats.end(); ++i)
-	{
-		for (vector<Base*>::iterator j = i + 1; j != nats.end(); ++j)
 		{
-			std::pair< Base*, Base* > b = std::pair< Base*, Base* >((Base*)(*i), (Base*)*j);
-			m_natPairs.push_back( b );
+			m_pathG.push_back(p1);
+      m_pathC.push_back(p1);
 		}
-	} 
+
+    m_dG = pathTo(p0, p1, PATH_GROUND_WITHROCKS, m_pathG);
+		for (std::list<point>::iterator k = m_pathG.begin(); k != m_pathG.end(); ++k)
+		{
+			(*k).mx = mapToImgX((*k).mx - 1);
+			(*k).my = mapToImgY((*k).my + 1);
+		}
+
+    m_dC = pathTo(p0, p1, PATH_CWALK_WITHROCKS, m_pathC);
+		for (std::list<point>::iterator k = m_pathC.begin(); k != m_pathC.end(); ++k)
+		{
+			(*k).mx = mapToImgX((*k).mx - 1);
+			(*k).my = mapToImgY((*k).my + 1);
+		}
+  }
 }
 
 
@@ -1030,37 +975,44 @@ float View::pathTo(point& p0, point& p1, PathType t, std::list<point>& path)
 
 void View::SaveImage(const char* a_fileName)
 {	
-	glBindFramebuffer(GL_FRAMEBUFFER, m_FramebufferName); // Set FBO
-	
-	float* pixelbuffer = new float[bufferWidth * bufferHeight * 4];
-	GLvoid* pixels =  (GLvoid*)pixelbuffer;
-	glReadPixels(0, 0, bufferWidth, bufferHeight, GL_RGBA, GL_FLOAT, pixels);
-  //glReadPixels(0, 0, bufferWidth, bufferHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-	
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	
-	// set up image params
-	int size[2];
-	size[0] = bufferWidth;
-	size[1] = bufferHeight;
-	
-	pngwriter w(bufferWidth, bufferHeight, 0, a_fileName);
-	
-	double r = 0;
-	double g = 0;
-	double b = 0;
-	
-	for (int i = 0; i < bufferWidth; ++i)
-	{
-		for (int j = 0; j < bufferHeight; ++j)
-		{
-			r = (double)(pixelbuffer[4 * (j * bufferWidth + i) + 0]);
-			g = (double)(pixelbuffer[4 * (j * bufferWidth + i) + 1]);
-			b = (double)(pixelbuffer[4 * (j * bufferWidth + i) + 2]);
-			
-			w.plot(i, j, r, g, b);
-		}
-	}			
-	
-	w.close();
+  // Thank you Dev IL
+  if (m_fbo)
+  {
+    GLuint TexID = m_fbo->getDiffuseTexture();
+
+	  ILboolean	Saved;
+
+
+	    ILubyte *Data;
+	    ILuint Width, Height;
+
+	    glBindTexture(GL_TEXTURE_2D, TexID);
+
+	    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH,  (GLint*)&Width);
+	    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, (GLint*)&Height);
+
+	    Data = (ILubyte*)ialloc(Width * Height * 4);
+	    if (Data == NULL) {
+		    return;// IL_FALSE;
+	    }
+
+	    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, Data);
+
+    ILuint imageID = ilGenImage();
+    ilBindImage( imageID );
+    ILboolean texResult = ilTexImage(
+                                  Width,
+                                  Height,
+                                  1,
+                                  4,
+                                  IL_RGBA,
+                                  IL_UNSIGNED_BYTE,
+                                  Data);
+
+    ilResetWrite();
+    ilEnable(IL_FILE_OVERWRITE);
+    Saved = ilSave(IL_PNG, a_fileName);
+
+      ifree(Data);
+  }
 }

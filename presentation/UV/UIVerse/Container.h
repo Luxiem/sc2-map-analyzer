@@ -2,12 +2,7 @@
 
 
 #include "Widget.h"
-
-
 #include <vector>
-
-
-typedef struct IDirect3DDevice9 *LPDIRECT3DDEVICE9, *PDIRECT3DDEVICE9;
 
 
 namespace UV
@@ -20,7 +15,13 @@ namespace UV
 
     virtual void Add(Widget* a_element);
 
+    virtual void Clear() {}
+
     virtual void Draw();
+
+    virtual bool OnLeftMouseDown(unsigned short a_x, unsigned short a_y) { return OnMousePressed(a_x, a_y); }
+    virtual bool OnLeftMouseUp(unsigned short a_x, unsigned short a_y) { return OnMouseReleased(a_x, a_y); }
+    virtual bool OnScrollWheel(unsigned short a_delta) { return false; }
 
     virtual void OnMouseMove(long a_x, long a_y);
     virtual bool OnMousePressed(unsigned short a_x, unsigned short a_y);
@@ -32,6 +33,8 @@ namespace UV
     
     virtual void GetRect(RECT& a_rect);
 
+    virtual void SetBorder(int a_borderWidth, unsigned long a_borderColour);
+
   protected:
 
     virtual void OnChildAdded(Widget* a_widget) {}
@@ -39,5 +42,8 @@ namespace UV
 
     // Elements contained in this page
     std::vector<Widget*> m_elements;
+
+    int m_borderWidth;
+    unsigned long m_borderColour;
   };
 }

@@ -24,9 +24,6 @@ namespace UV
     bool OnMousePressed(unsigned short a_x, unsigned short a_y);
     bool OnMouseReleased(unsigned short a_x, unsigned short a_y);
 
-    void OnDeviceReset();
-    void OnDeviceLost();
-
     void Draw();
 
     void SetPosition(int a_x, int a_y);
@@ -37,10 +34,15 @@ namespace UV
 
     int GetSelectedIndex();
 
-    void SetCallback(Callback a_callback);
+    // Set event callbacks
+    void SetCallback(Callback* a_callback);
 
     // Callback from list
     void OnItemSelected();
+
+    void GetRect(RECT& a_rect);
+
+    void Clear();
 
   protected:
 
@@ -55,6 +57,7 @@ namespace UV
     bool m_open;
     bool m_hover;
 
-    Callback m_callback;
+    Callback* m_callback;
+
   };
 }

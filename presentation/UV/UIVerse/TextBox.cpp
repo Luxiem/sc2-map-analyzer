@@ -312,7 +312,7 @@ const char* TextBox::GetText()
 }
 
 
-void TextBox::SetCallback(Callback a_callback)
+void TextBox::SetCallback(Callback* a_callback)
 {
   m_callback = a_callback;
 }

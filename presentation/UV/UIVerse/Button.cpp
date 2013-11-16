@@ -1,6 +1,5 @@
 #include "Button.h"
 #include "DrawManager.h"
-#include "ResourceManager.h"
 
 
 namespace UV
@@ -10,17 +9,12 @@ namespace UV
 Button::Button(Declaration a_decl)
 {
   m_state = NORMAL;
-  m_rm = 0;
   memset(&m_decl, 0, sizeof(Declaration));
   memset(&m_rect, 0, sizeof(RECT));
 
   m_decl = a_decl;
 
-  m_rect.left = m_decl.HMargin;
-  m_rect.top = m_decl.VMargin;
-  
-  m_rect.right = m_rect.left + 48;
-  m_rect.bottom = m_rect.top + 48;
+  m_rect = a_decl.Rect;
 
   m_show = true;
 }
@@ -47,14 +41,26 @@ void Button::OnMouseMove(long a_x, long a_y)
   {
     if (m_state == NORMAL)
     {
+      // Set state: Hover
       m_state = HOVER;
+      if (m_decl.m_commandHover)
+      {
+        UV::EventArgs args;
+        m_decl.m_commandHover((void*)this, args);
+      }
     }
   }
   else
   {
     if (m_state == HOVER)
     {
+      // Set state: Normal
       m_state = NORMAL;
+      if (m_decl.m_commandMouseLeave)
+      {
+        UV::EventArgs args;
+        m_decl.m_commandMouseLeave((void*)this, args);
+      }
     }
   }
 }
@@ -101,12 +107,6 @@ bool Button::OnMouseReleased(unsigned short a_x, unsigned short a_y)
   }
 
   return false;
-}
-
-
-void Button::OnDeviceReset()
-{
-  
 }
 
 
@@ -198,6 +198,18 @@ void Button::SetText(const char* text, unsigned long colour)
 
   m_text = std::string(text);
   m_colour = colour;
+}
+
+
+void Button::SetPosition(int a_x, int a_y)
+{
+  int w = m_rect.right - m_rect.left;
+  int h = m_rect.bottom - m_rect.top;
+
+  m_rect.left = a_x;
+  m_rect.top = a_y;
+  m_rect.right = a_x + w;
+  m_rect.bottom = a_y + h;
 }
 
 

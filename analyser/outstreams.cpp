@@ -5,6 +5,9 @@
 #include "utility.hpp"
 #include "outstreams.hpp"
 
+#include "Common.h"
+
+
 static bool warningOrErrorReported = false;
 
 static bool printMessages = true;
@@ -47,21 +50,38 @@ void printWarning( const char* format, ... )
   fflush( stderr );
 }
 
+//void printError( const char* format, ... )
+//{
+//  ++numErrors;
+//  if( !printErrors ) { return; }
+//  fprintf( stderr, "ERROR: " );
+//  va_list argptr;
+//  va_start( argptr, format );
+//  vfprintf( stderr, format, argptr );
+//  va_end( argptr );
+//  fprintf( stderr,
+//           "Help improve the map analyzer: send map files that cause errors to %s.\n",
+//           adminEmail );
+//  fflush( stderr );
+//  warningOrErrorReported = true;
+//}
+
 void printError( const char* format, ... )
 {
+  char sp[2048];
+
   ++numErrors;
-  if( !printErrors ) { return; }
-  fprintf( stderr, "ERROR: " );
-  va_list argptr;
-  va_start( argptr, format );
-  vfprintf( stderr, format, argptr );
-  va_end( argptr );
-  fprintf( stderr,
-           "Help improve the map analyzer: send map files that cause errors to %s.\n",
-           adminEmail );
-  fflush( stderr );
+
+  va_list va_args;
+  va_start(va_args, format);
+  _vsnprintf(sp, 2048, format, va_args);
+  va_end(va_args);
+
   warningOrErrorReported = true;
+
+  Common::Log(&(sp[0]));
 }
+
 
 void enableMessages() { printMessages = true;  }
 void enableWarnings() { printWarnings = true;  }

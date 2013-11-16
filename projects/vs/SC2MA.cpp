@@ -28,8 +28,11 @@
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "freetype.lib")
 #pragma comment(lib, "ftgl.lib")
-#pragma comment(lib, "libpng16.lib")
+//#pragma comment(lib, "libpng16.lib")
 #pragma comment(lib, "Releasetinyxml/tinyxml.lib")
+#pragma comment(lib, "DevIL.lib")
+//#pragma comment(lib, "ILU.lib")
+#pragma comment(lib, "ILUT.lib")
 
 
 // Stuff
@@ -291,7 +294,7 @@ void SaveImageFile()
   data.nMaxFile = MAX_PATH;
   data.lpstrFileTitle = '\0';
   data.nMaxFileTitle = sizeof('\0'); 
-  data.lpstrInitialDir = (LPSTR)NULL; 
+  data.lpstrInitialDir = (LPCSTR)NULL; 
   data.Flags = OFN_EXPLORER | OFN_OVERWRITEPROMPT; 
   data.lpstrTitle = '\0'; 
 
@@ -315,7 +318,7 @@ void LoadMapFile()
   data.nMaxFile = MAX_PATH;
   data.lpstrFileTitle = '\0';
   data.nMaxFileTitle = sizeof('\0'); 
-  data.lpstrInitialDir = (LPSTR)NULL; 
+  data.lpstrInitialDir = (LPCSTR)NULL; 
   data.Flags = OFN_EXPLORER; 
   data.lpstrTitle = '\0'; 
 

@@ -25,10 +25,7 @@ ToggleButton::~ToggleButton()
 void ToggleButton::OnMouseMove(long a_x, long a_y)
 {
   RECT m_rect;
-  m_rect.left = m_decl.HMargin;
-  m_rect.top = m_decl.VMargin;
-  m_rect.right = m_rect.left + 48;
-  m_rect.bottom = m_rect.top + 48;
+  GetRect(m_rect);
 
   m_hover = (a_x >= m_rect.left && m_rect.right >= a_x &&
              a_y >= m_rect.top && m_rect.bottom >= a_y);

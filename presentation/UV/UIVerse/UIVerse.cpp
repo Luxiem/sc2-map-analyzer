@@ -7,63 +7,40 @@ namespace UV
 {
   Core::Core()
   {
-    m_page = NULL;
-
     m_fm = NULL;
     m_rm = NULL;
 
     DrawManager::Init();
-
-    // Grey 'hover'
-    //DrawManager::GetSpriteManager()->CreateBanner(0, 30, 3.0, 1.0, D3DCOLOR_XRGB(130, 135, 144), D3DCOLOR_XRGB(211, 211, 211), D3DCOLOR_XRGB(211, 211, 211));
-
-    // Yellow 'select'
-    //DrawManager::GetSpriteManager()->CreateBanner(1, 30, 3.0, 1.0, D3DCOLOR_XRGB(130, 135, 144), D3DCOLOR_XRGB(255, 217, 108), D3DCOLOR_XRGB(255, 217, 108));
   }
 
 
   Core::~Core()
   {
-    if (m_page) delete m_page;
+    // delete elements
+    for (size_t i = 0; i < m_elements.size(); ++i)
+    {
+      delete m_elements[i];
+    }
+
+    // delete pages
+    for (size_t i = 0; i < m_pages.size(); ++i)
+    {
+      delete m_pages[i];
+    }
 
     DrawManager::ShutDown();
   }
 
 
-  bool Core::OnLeftMouseDown(int a_x, int a_y)
-  {
-    if (m_page) 
-      return m_page->OnMousePressed(a_x, a_y);
-
-    return false;
-  }
-
-
-  void Core::OnLeftMouseUp(int a_x, int a_y)
-  {
-    if (m_page) 
-      m_page->OnMouseReleased(a_x, a_y);
-  }
-
-
-  void Core::OnMouseMove(int a_x, int a_y)
-  {
-    if (m_page) 
-      m_page->OnMouseMove(a_x, a_y);
-  }
-
-
-  void Core::OnScrollWheel(int a_delta)
-  {
-
-  }
-
-
   void Core::OnPaint()
   {
+  /*
     // Draw current page
     if (m_page) 
       m_page->Draw();
+
+  */
+    Draw();
   }
 
 
@@ -82,10 +59,10 @@ namespace UV
 
 
   Page* Core::CreatePage()
-  {
-    if (m_page) return m_page;
-    m_page = new Page();
-    return m_page;
+  {    
+    Page* page = new Page();
+    m_pages.push_back(page);
+    return page;
   }
 
 

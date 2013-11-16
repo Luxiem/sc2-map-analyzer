@@ -39,7 +39,7 @@ namespace UV
 
     const char* GetText();
 
-    void SetCallback(Callback a_callback);
+    void SetCallback(Callback* a_callback);
 
   protected:
 
@@ -64,7 +64,7 @@ namespace UV
 
     std::string m_text;
 
-    Callback m_callback;
+    Callback* m_callback;
 
   };
 }

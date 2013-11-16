@@ -1,12 +1,16 @@
 #include "Container.h"
+#include "DrawManager.h"
+#include "RectManager.h"
 
 
 namespace UV
 {
 
 
-Container::Container()
+Container::Container() : Widget()
 {
+  m_borderWidth = 0;
+  m_borderColour = 0;
 }
 
 
@@ -26,6 +30,19 @@ void Container::Draw()
   for (size_t i = 0; i < m_elements.size(); ++i)
   {
     m_elements[i]->Draw();
+  }
+
+  if (m_borderWidth)
+  {
+    RectManager* rm = DrawManager::GetRectManager();
+    UV::Declaration2 r;
+    GetRect(r.Rect);
+    r.Fill = false;
+    r.Color0 = m_borderColour;
+    r.Color1 = m_borderColour;
+    r.Color2 = m_borderColour;
+    r.Color3 = m_borderColour;
+    rm->Draw(r);
   }
 }
 
@@ -108,5 +125,12 @@ void Container::GetRect(RECT& a_rect)
     if (rect.right > a_rect.right) a_rect.right = rect.right;
   }
 }
+
+void Container::SetBorder(int a_borderWidth, unsigned long a_borderColour)
+{
+  m_borderWidth = a_borderWidth;
+  m_borderColour = a_borderColour;
+}
+
 
 } // namespace

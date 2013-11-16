@@ -11,7 +11,7 @@ class SC2Map;
 struct Base;
 enum PathType;
 class Controller;
-typedef unsigned int GLuint;
+class FBORenderTexture;
 
 
 // SC2MA View class
@@ -40,10 +40,7 @@ public:
 	RectManager g_rm;
 
   // ?
-  void IncPath(int a_inc);
-
-  //
-  void GetPixel(int a_i, int a_j, double& r, double& g, double& b);
+  void SetPath(int a_pathSpawnA, int a_pathBaseA, int a_pathSpawnB, int a_pathBaseB);
 
 protected:
 
@@ -74,27 +71,25 @@ protected:
   void createBuffer();
   void releaseBuffer();
 
-  void pushScreenCoordinateMatrix();
-  void popScreenCoordinateMatrix();
+  FBORenderTexture* m_fbo;
 
-  // GL View objects
-	GLuint m_renderedTexture;
-	GLuint m_FramebufferName;
+  int m_bufferWidth;
+  int m_bufferHeight;	
 
-  int bufferWidth;
-  int bufferHeight;	
-
-  int windowWidth;
-  int windowHeight;	
+  int m_windowWidth;
+  int m_windowHeight;	
 
   // Pathing
-	std::vector< std::pair< Base*, Base* > > m_mainPairs;
-	std::vector< std::pair< Base*, Base* > > m_natPairs;
-	int m_pathN;
-	int m_pathT;
-
-  // Pathing generation
-	void CreatePathingLayout();
 	float pathTo(point& p0, point& p1, PathType t, std::list<point>& path);
 
+  std::list<point> m_pathG;
+  std::list<point> m_pathC;
+
+  float m_dG;
+  float m_dC;
+
+  std::string m_spawnNameA;
+  std::string m_spawnNameB;
+  std::string m_baseNameA;
+  std::string m_baseNameB;
 };

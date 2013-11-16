@@ -225,6 +225,13 @@ struct Destruct
 };
 
 
+struct Collapsible
+{
+  point loc;
+  bool state;
+};
+
+
 struct LoSB
 {
   point loc;

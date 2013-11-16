@@ -7,13 +7,13 @@ namespace UV
 {
 
 
-Combo::Combo()
+Combo::Combo() : Widget()
 {
   m_list = new List();
   m_left = 0;
   m_top = 0;
-  m_width = 200;
-  m_height = 32;
+  m_width = 42;
+  m_height = 22;
   m_open = false;
   m_hover = false;
 
@@ -22,7 +22,7 @@ Combo::Combo()
   // TODO Set list callback.. to notify self of events..
   m_list->SetParent(this);
 
-  m_callback = NULL;
+  m_callback = 0;
 }
 
 
@@ -67,6 +67,11 @@ bool Combo::OnMousePressed(unsigned short a_x, unsigned short a_y)
   if (m_hover)
   {
     m_open = !m_open;
+    if (m_open)
+    {
+      // Set list size
+      m_list->SetSize(m_width, -1);
+    }
     return true;
   }
   else
@@ -81,18 +86,6 @@ bool Combo::OnMousePressed(unsigned short a_x, unsigned short a_y)
 bool Combo::OnMouseReleased(unsigned short a_x, unsigned short a_y)
 {
   return m_list->OnMouseReleased(a_x, a_y);
-}
-
-
-void Combo::OnDeviceReset()
-{
-  m_list->OnDeviceReset();
-}
-
-
-void Combo::OnDeviceLost()
-{
-  m_list->OnDeviceLost();
 }
 
 
@@ -126,8 +119,9 @@ void Combo::Draw()
   
   // Text
   std::string item = m_list->GetSelectedItem();
-//  if (item.length())
+  if (item.length())
     //DrawManager::GetFontManager()->Draw(item.c_str(), m_left + 10, m_top - 4);
+    DrawManager::GetFontManager()->Draw(m_left + 10, m_top + m_height - 6 , 0, item.c_str());
 
   // List
   if (m_open)
@@ -158,7 +152,11 @@ void Combo::Select(int a_index)
 {
   m_list->Select(a_index);
   
-  if (m_callback) m_callback(this);
+  if (m_callback)
+  {
+    EventArgs args;
+    m_callback->Execute(this, args);
+  }
 }
 
 
@@ -168,7 +166,7 @@ int Combo::GetSelectedIndex()
 }
 
 
-void Combo::SetCallback( Callback a_callback )
+void Combo::SetCallback(Callback* a_callback)
 {
   m_callback = a_callback;
 }
@@ -177,7 +175,26 @@ void Combo::SetCallback( Callback a_callback )
 void Combo::OnItemSelected()
 {
   m_open = false;
-  if (m_callback) m_callback(this);
+  if (m_callback)
+  {
+    EventArgs args;
+    m_callback->Execute(this, args);
+  }
+}
+
+
+void Combo::GetRect(RECT& a_rect)
+{
+  a_rect.top = m_top;
+  a_rect.left = m_left;
+  a_rect.bottom = m_top + m_height;
+  a_rect.right = m_left + m_width;
+}
+
+
+void Combo::Clear()
+{
+  m_list->Clear();
 }
 
 

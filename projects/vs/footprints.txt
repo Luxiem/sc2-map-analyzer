@@ -34,6 +34,7 @@ doodad MonoTrackBend90_180__rot270cw
 
 
 resource MineralField
+resource LabMineralField
 resource RichMineralField
 resource HighYieldMineralField  # an old name
 {
@@ -60,6 +61,7 @@ doodad   CharCrystalHuge
 
 
 nobuildmain MineralField
+nobuildmain LabMineralField
 nobuildmain RichMineralField
 nobuildmain HighYieldMineralField  # an old name
 {
@@ -205,6 +207,10 @@ nobuildmain ProtossVespeneGeyser
 
 
 losb     MarSaraCurtain
+losb     IceWorldCurtain
+losb     SpacePlatformCurtain
+losb     MeinhoffCurtain
+losb     ShakurasCurtain
 destruct BraxisAlphaDestructible1x1
 doodad   PathingBlocker1x1Doodad
 {
@@ -315,6 +321,7 @@ destruct DestructibleDebris4x4
 
 destruct DestructibleRock6x6
 destruct DestructibleDebris6x6
+destruct DestructibleIce6x6
 {
   -2, -3
   -1, -3
@@ -431,6 +438,7 @@ destruct DestructibleRampDiagonalHugeBLUR
 #//
 #////////////////////////////////////////////////
 destruct DestructibleRampDiagonalHugeULBR
+destruct DestructibleRockEx1DiagonalHugeULBR
 {
    2, -5
    3, -5
@@ -477,6 +485,53 @@ destruct DestructibleRampDiagonalHugeULBR
 }
 
 
+destruct DestructibleRockEx1DiagonalHugeBLUR
+{
+  -2, -5
+  -3, -5
+  -1, -4
+  -2, -4
+  -3, -4
+  -4, -4
+  -0, -3
+  -1, -3
+  -2, -3
+  -3, -3
+  -4, -3
+   1, -2
+   0, -2
+  -1, -2
+  -2, -2
+  -3, -2  
+   2, -1
+   1, -1
+   0, -1
+  -1, -1
+  -2, -1  
+   3,  0
+   2,  0
+   1,  0
+   0,  0
+  -1,  0  
+   4,  1
+   3,  1
+   2,  1
+   1,  1
+   0,  1
+   5,  2
+   4,  2
+   3,  2
+   2,  2
+   1,  2
+   5,  3
+   4,  3
+   3,  3
+   2,  3
+   4,  4
+   3,  4
+}
+
+
 unit Observatory # old name
 unit XelNagaTower
 {
@@ -491,6 +546,7 @@ unit XelNagaTower
 # Extra?
 #
 destruct DestructibleRockEx16x6
+destruct DestructibleRockEx16x16
 {
   -2, -3
   -1, -3
@@ -531,18 +587,61 @@ destruct DestructibleRockEx16x6
 # Collapsible
 #
 
-collapsible CollapsibleRockTowerDiagonal
-collapsible CollapsibleTerranTowerRampLeft
-collapsible CollapsibleRockTowerDiagonal__rot180cw
+
+collapsible_source CollapsibleTerranTowerRampRight
+collapsible_source CollapsibleTerranTowerRampLeft
+collapsible_source CollapsibleRockTowerRampRight
+collapsible_source CollapsibleRockTowerRampLeft
+collapsible_source CollapsibleRockTowerDiagonal
 {
+    -2, -2, 
+    -2, -1,
+    -2,  0,
+    -2,  1,
+    -2,  2,
+    -1, -2,
+    -1, -1,
+    -1,  0,
+    -1,  1,
+    -1,  2,
+     0, -2,
+     0, -1,
+     0,  0,
+     0,  1,
+     0,  2,
+     1, -2,
+     1, -1,
+     1,  0,
+     1,  1,
+     1,  2,
+     2, -2,
+     2, -1,
+     2,  0,
+     2,  1,
+     2,  2,
+}
+
+
+collapsible_target CollapsibleRockTowerRampRight
+collapsible_target CollapsibleRockTowerRampLeft
+collapsible_target CollapsibleRockTowerDiagonal
+collapsible_target CollapsibleTerranTowerRampLeft
+collapsible_target CollapsibleTerranTowerRampRight
+{
+  -2, -3
+  -1, -3
+   0, -3
+  -3, -2
   -2, -2
   -1, -2
    0, -2
    1, -2
+  -3, -1
   -2, -1
   -1, -1
    0, -1
    1, -1
+  -3,  0
   -2,  0
   -1,  0
    0,  0
@@ -550,8 +649,9 @@ collapsible CollapsibleRockTowerDiagonal__rot180cw
   -2,  1
   -1,  1
    0,  1
-   1,  1
+
 }
+
 
 destruct UnbuildableRocksDestructible
 destruct UnbuildableBricksDestructible

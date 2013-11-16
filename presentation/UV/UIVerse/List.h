@@ -6,9 +6,6 @@
 #include <string>
 
 
-typedef struct IDirect3DTexture9 *LPDIRECT3DTEXTURE9, *PDIRECT3DTEXTURE9;
-
-
 namespace UV
 {
   class Slider;
@@ -28,9 +25,6 @@ namespace UV
     bool OnMousePressed(unsigned short a_x, unsigned short a_y);
     bool OnMouseReleased(unsigned short a_x, unsigned short a_y);
 
-    void OnDeviceReset();
-    void OnDeviceLost();
-
     void Draw();
 
     void SetPosition(int a_x, int a_y);
@@ -43,24 +37,20 @@ namespace UV
 
     void Select(int a_index);
 
-    void SetCallback(Callback a_callback);
+    void SetCallback(Callback* a_callback);
 
     void SetParent(Combo* a_combo);
 
     unsigned int GetItemCount();
 
-  protected:
+    void Clear();
 
-    void FillRect(LPDIRECT3DTEXTURE9* a_texture, unsigned long a_fillColor, unsigned long a_borderColor, int a_height = 30, int a_width = 215);
+  protected:
 
     std::vector<std::string> m_items;
 
     Slider* m_scrollbar;
     bool m_showScrollBar;
-
-    // Resources
-    //LPDIRECT3DTEXTURE9 m_selection;
-    //LPDIRECT3DTEXTURE9 m_hover;
 
     Declaration m_decl;
 
@@ -72,7 +62,9 @@ namespace UV
     int m_width;
     int m_height;
 
-    Callback m_callback;
+    int m_itemHeight;
+
+    Callback* m_callback;
 
     Combo* m_parent;
   };

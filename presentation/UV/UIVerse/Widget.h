@@ -7,12 +7,6 @@
 
 namespace UV
 {
-  class SpriteManager;
-
-
-  typedef void (*Callback)(void*);
-
-
   typedef struct tagRECT
   {
     long    left;
@@ -35,15 +29,14 @@ namespace UV
   public:
 
     RECT Rect;
-    short HMargin;
-    short VMargin;
     int Align;
     int Style;
-    void* Parent;
     unsigned long Resource;
 
     SystemCommand m_commandPressed;
     SystemCommand m_commandReleased;
+    SystemCommand m_commandHover;
+    SystemCommand m_commandMouseLeave;
 
     Declaration()
     {
@@ -83,7 +76,10 @@ namespace UV
   {
   public:
     Widget() :
-      m_parent(0)
+      m_parent(0),
+      m_userData(0),
+      m_textAlignH(ALIGN_NEAR),
+      m_textAlignV(ALIGN_NEAR)
     {
     }
 
@@ -101,7 +97,7 @@ namespace UV
 
     enum Align
     {
-      ALIGN_NEAR,
+      ALIGN_NEAR = 0,
       ALIGN_CENTER,
       ALIGN_FAR,
     };
@@ -127,6 +123,9 @@ namespace UV
     virtual void SetMargin() {}
     virtual void SetStretch() {}
 
+    virtual void SetTextAlignH(Align a_align) { m_textAlignH = a_align; }
+    virtual void SetTextAlignV(Align a_align) { m_textAlignV = a_align; }
+
     void SetParent(Widget* a_parent)
     {
       if (m_parent) m_parent->OnChildRemoved(this);
@@ -140,6 +139,16 @@ namespace UV
       a_rect.bottom = 0;
       a_rect.left = 0;
       a_rect.right = 0;
+    }
+
+    virtual void* GetUserData()
+    {
+      return m_userData;
+    }
+
+    virtual void SetUserData(void* a_data)
+    {
+      m_userData = a_data;
     }
     
   protected:
@@ -159,8 +168,72 @@ namespace UV
 
     Widget* m_parent;
 
+    void* m_userData;
+
+    Align m_textAlignH;
+    Align m_textAlignV;
   };
+  
+
+  class Callback
+  {
+  public:
+    virtual void Execute(UV::Widget* a_caller, UV::EventArgs& a_args) const = 0;
+  }; 
 }
+
+     
+template <class C>
+class TCallback : public UV::Callback
+{
+public:
+
+
+  typedef void (C::*CallbackFunction)(UV::Widget* a_caller, UV::EventArgs& a_args);
+
+
+  TCallback()
+  {
+    m_instance = 0;
+    m_fn = 0;
+  }
+
+
+  TCallback(C* a_InstancePointer, CallbackFunction a_FunctionPointer)
+  {
+    m_instance = a_InstancePointer;
+    m_fn = a_FunctionPointer;
+  }
+     
+
+  virtual void Execute(UV::Widget* a_caller, UV::EventArgs& a_args) const
+  {
+    if (m_instance)
+    {
+      if (m_fn)
+      { 
+        (m_instance->*m_fn)(a_caller, a_args);
+      }
+    }
+    else
+    {
+      // static fn
+    }
+  }
+
+
+  void SetCallback(C* a_InstancePointer, CallbackFunction a_FunctionPointer)
+  {
+    m_instance = a_InstancePointer;
+    m_fn = a_FunctionPointer;
+  }
+
+     
+private:
+  C* m_instance;
+  CallbackFunction m_fn;
+};
+
 
 
 #endif//__WIDGET_H__

@@ -7,7 +7,7 @@ namespace UV
 {
 
 
-Stack::Stack()
+Stack::Stack() : Container()
 {
   
 }

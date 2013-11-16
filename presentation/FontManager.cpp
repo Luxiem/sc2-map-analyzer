@@ -30,6 +30,9 @@ void FontManager::Init()
 {
   if (!IsInit())
   {
+	  GetFont("arial.ttf", 12);
+	  GetFont("arial.ttf", 16);
+	  GetFont("arial.ttf", 14);
   }
 }
 
@@ -54,7 +57,6 @@ FTFont* FontManager::GetFont(const char *filename, int size)
 		return result->second;
 	}
 	
-
 	string path = "";
 	string fullname = path + string(filename);
 	FTFont* font = new FTTextureFont(fullname.c_str());	

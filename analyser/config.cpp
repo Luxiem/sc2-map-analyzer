@@ -358,6 +358,8 @@ void readFootprintConfig( string* path, Config* c )
   list<string> units;
   list<string> doodads;
   list<string> destructs;
+  list<string> collapsible_sources;
+  list<string> collapsible_targets;
   list<string> resources;
   list<string> nobuilds;
   list<string> nobuildmains;
@@ -436,7 +438,8 @@ void readFootprintConfig( string* path, Config* c )
         if( type != "unit"        &&
             type != "doodad"      &&
             type != "destruct"    &&
-            type != "collapsible" &&
+            type != "collapsible_source" &&
+            type != "collapsible_target" &&
             type != "resource"    &&
             type != "nobuildmain" &&
             type != "nobuild"     &&
@@ -464,11 +467,12 @@ void readFootprintConfig( string* path, Config* c )
         if( type == "unit"        ) { units       .push_back( name ); } else
         if( type == "doodad"      ) { doodads     .push_back( name ); } else
         if( type == "destruct"    ) { destructs   .push_back( name ); } else
-        if( type == "collapsible" ) { destructs   .push_back( name ); } else
         if( type == "resource"    ) { resources   .push_back( name ); } else
         if( type == "nobuildmain" ) { nobuildmains.push_back( name ); } else
         if( type == "nobuild"     ) { nobuilds    .push_back( name ); } else
-        if( type == "losb"        ) { losbs       .push_back( name ); }
+        if( type == "losb"        ) { losbs       .push_back( name ); } else
+        if( type == "collapsible_source" ) { collapsible_sources.push_back( name ); } else
+        if( type == "collapsible_target" ) { collapsible_targets.push_back( name ); } 
 
         token = strtok( NULL, delims );
         if( token != NULL )
@@ -555,6 +559,36 @@ void readFootprintConfig( string* path, Config* c )
           }
 
 
+          map<string, Footprint*>* collapsible_source_name2foot = c->type2name2foot["collapsible_source"];
+          if( collapsible_source_name2foot == NULL )
+          {
+            collapsible_source_name2foot = new map<string, Footprint*>();
+            c->type2name2foot["collapsible_source"] = collapsible_source_name2foot;
+          }
+
+          for( list<string>::iterator dItr = collapsible_sources.begin();
+               dItr != collapsible_sources.end();
+               ++dItr )
+          {
+            collapsible_source_name2foot->insert( make_pair( *dItr, footprint ) );
+          }
+
+
+          map<string, Footprint*>* collapsible_target_name2foot = c->type2name2foot["collapsible_target"];
+          if( collapsible_target_name2foot == NULL )
+          {
+            collapsible_target_name2foot = new map<string, Footprint*>();
+            c->type2name2foot["collapsible_target"] = collapsible_target_name2foot;
+          }
+
+          for( list<string>::iterator dItr = collapsible_targets.begin();
+               dItr != collapsible_targets.end();
+               ++dItr )
+          {
+            collapsible_target_name2foot->insert( make_pair( *dItr, footprint ) );
+          }
+
+
           map<string, Footprint*>* resources_name2foot = c->type2name2foot["resource"];
           if( resources_name2foot == NULL )
           {
@@ -622,6 +656,8 @@ void readFootprintConfig( string* path, Config* c )
           nobuildmains.clear();
           nobuilds    .clear();
           losbs       .clear();
+          collapsible_sources.clear();
+          collapsible_targets.clear();
 
           footprint = NULL;
 

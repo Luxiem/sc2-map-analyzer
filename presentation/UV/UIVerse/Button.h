@@ -8,8 +8,6 @@
 
 namespace UV
 {
-  class ResourceManager;
-
 
   class Button : public Widget
   {
@@ -22,8 +20,6 @@ namespace UV
     bool OnMousePressed(unsigned short a_x, unsigned short a_y);
     bool OnMouseReleased(unsigned short a_x, unsigned short a_y);
 
-    void OnDeviceReset();
-
     void Draw();
 
     void SetText(const char* text, unsigned long colour);
@@ -32,7 +28,19 @@ namespace UV
 
     void Hide() { m_show = false; }
 
+    void SetPosition(int a_x, int a_y);
+
     void SetSize(int a_width, int a_height);
+
+    void GetRect(RECT& a_rect)
+    {
+      a_rect.top = m_rect.top;
+      a_rect.bottom = m_rect.bottom;
+      a_rect.left = m_rect.left;
+      a_rect.right = m_rect.right;
+    }
+
+    void SetStyle(unsigned long a_style) { m_style = a_style; }
 
   protected:
 
@@ -52,11 +60,11 @@ namespace UV
 
     ButtonState m_state;
 
-    ResourceManager* m_rm;
     Declaration m_decl;
     RECT m_rect;
     std::string m_text;
     unsigned long m_colour;
+    unsigned long m_style;
   };
 }
 
