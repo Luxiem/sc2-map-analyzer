@@ -6,6 +6,7 @@
 #include "coordinates.hpp"
 #include "utility.hpp"
 #include "SC2Map.hpp"
+#include <math.h>
 
 
 

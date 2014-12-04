@@ -11,6 +11,9 @@
 
 // ?
 #include <stdio.h>
+#include <math.h>
+
+#include <SDL.h>
 
 
 #if defined(WIN32) || defined(_WIN32) 
@@ -48,8 +51,14 @@ void Common::ReloadConfig()
 }
 
 
+static std::string s_path;
+std::string Common::getPath() { return s_path; }
+
+
 void Common::Init(std::string a_path)
 {
+    s_path = a_path;
+    
 	// Config reading
 	std::string toolPath = a_path;
 	initConfigReading();
@@ -65,7 +74,18 @@ void Common::Init(std::string a_path)
 
   s_controller->m_core->SetFontManager(&s_view->g_fm);
   s_controller->m_core->SetRectManager(&s_view->g_rm);
+
 }
+
+
+#ifdef _WINDOWS
+HWND Common::getHwnd()
+{
+	if (s_view) return s_view->getHwnd();
+
+	return 0;
+}
+#endif
 
 
 void Common::beginLoadMap(std::string a_fileName)
@@ -301,18 +321,67 @@ void Common::GenerateSiegeMap(int a_type)
 
 void Common::SaveImage(std::string a_fileName)
 {
-	if (a_fileName.substr(a_fileName.size() - 4, 4) != std::string(".png"))
+	if (a_fileName.size() <= 4 || a_fileName.substr(a_fileName.size() - 4, 4) != std::string(".png"))
 	{
 		a_fileName += ".png";
 	}
 	
-  s_view->SaveImage(a_fileName.c_str());
+    s_view->SaveImage(a_fileName.c_str());
 }
+
+
+static bool quit = false;
+
+
+bool Common::Quit() { return quit; }
 
 
 void Common::DrawScreen()
 {
-  s_view->DrawScreen();
+    s_view->DrawScreen();
+    
+    // Process events
+    SDL_Event e;
+
+    while (SDL_PollEvent(&e))
+    {
+        //If user closes the window
+        if (e.type == SDL_QUIT)
+            quit = true;
+        
+        //If user presses any key
+        else if (e.type == SDL_KEYDOWN)
+        {
+        }
+        //If user clicks the mouse
+        else if (e.type == SDL_MOUSEBUTTONDOWN)
+        {
+            if (e.button.button == 1)
+                OnLeftMouseDown(e.button.x, e.button.y);
+        }
+        else if (e.type == SDL_MOUSEBUTTONUP)
+        {
+            if (e.button.button == 1)
+                OnLeftMouseUp(e.button.x, e.button.y);
+        }
+        else if (e.type == SDL_MOUSEMOTION)
+        {
+            OnMouseMove(e.motion.x, e.motion.y);
+        }
+        else if (e.type == SDL_WINDOWEVENT)
+        {
+            if (e.window.event == SDL_WINDOWEVENT_RESIZED)
+            {
+                //s_view->OnClientAreaChanged(e.window.data1, e.window.data2);
+				OnClientAreaChanged(e.window.data1, e.window.data2);
+            }
+        }
+        else if (e.type == SDL_DROPFILE)
+        {
+            beginLoadMap(e.drop.file);
+            SDL_free(e.drop.file);
+        }
+    }
 }
 
 

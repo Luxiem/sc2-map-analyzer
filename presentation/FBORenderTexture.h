@@ -1,9 +1,4 @@
 #pragma once
-#include <windows.h>
-#include <gl/glew.h>
-#include <gl/gl.h>
-#include <gl/glu.h>
-
 /**
 *	A Frame Buffer Object is used by OpenGL to render into a texture. Specifically this implementation assumes that the
 *	rendered model will provide diffuse, position and normal at the same time in a MRT fashion
@@ -20,13 +15,9 @@ public:
 	void	stop();
 	void	showTexture(unsigned int i, float fSizeX = 400, float fSizeY = 400, float x = 0, float y = 0) const;
 
-	GLuint	getDiffuseTexture() const { return m_diffuseTexture; }
-
 private:
 
 	// Variables
-	GLuint			m_fbo; // The FBO ID
-	GLuint			m_diffuseRT; // The diffuse render target
 	unsigned int	m_diffuseTexture; // The OpenGL texture for the diffuse render target
 
 	unsigned int	m_width; // FBO width

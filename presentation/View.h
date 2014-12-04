@@ -5,13 +5,18 @@
 #include "FontManager.h"
 #include <vector>
 #include <list>
+#include "sc2mapTypes.hpp" // for PathType
+#include <SDL.h>
 
+#ifdef _WINDOWS
+#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+// Windows Header Files:
+#include <windows.h>
+#endif
 
 class SC2Map;
 struct Base;
-enum PathType;
 class Controller;
-class FBORenderTexture;
 
 
 // SC2MA View class
@@ -42,6 +47,12 @@ public:
   // ?
   void SetPath(int a_pathSpawnA, int a_pathBaseA, int a_pathSpawnB, int a_pathBaseB);
 
+    SDL_Renderer* Renderer() { return m_renderer; }
+
+#ifdef _WINDOWS
+	HWND getHwnd();
+#endif
+    
 protected:
 
   SC2Map* m_sc2map;
@@ -71,7 +82,8 @@ protected:
   void createBuffer();
   void releaseBuffer();
 
-  FBORenderTexture* m_fbo;
+    SDL_Surface* m_targetSurf;
+    SDL_Texture* m_targetTex;
 
   int m_bufferWidth;
   int m_bufferHeight;	
@@ -84,12 +96,17 @@ protected:
 
   std::list<point> m_pathG;
   std::list<point> m_pathC;
+  std::list<point> m_pathA;
 
   float m_dG;
   float m_dC;
+  float m_dA;
 
   std::string m_spawnNameA;
   std::string m_spawnNameB;
   std::string m_baseNameA;
   std::string m_baseNameB;
+    
+    SDL_Window* m_window;
+    SDL_Renderer* m_renderer;
 };

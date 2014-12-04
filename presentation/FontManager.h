@@ -5,9 +5,12 @@
 #include <map>
 #include <string>
 
+#include "SDL.h"
+#include "SDL_ttf.h"
 
-class FTFont;
-typedef std::map<std::string, FTFont*> FontList;
+
+//struct TTF_Font;
+typedef std::map<int, TTF_Font*> FontList;
 typedef FontList::const_iterator FontIter;
 
 
@@ -17,7 +20,7 @@ public:
   FontManager();
   ~FontManager();
 
-  void Init();
+    void Init(SDL_Renderer* a_renderer, std::string a_path);
 
   bool IsInit();
 
@@ -25,8 +28,13 @@ public:
 
 protected:
 
-	FTFont* GetFont(const char *filename, int size);
+	TTF_Font* LoadFont(int a_type, const char* a_filename, int a_size);
+    TTF_Font* GetFont(int a_type);
 	
+    SDL_Renderer* m_renderer;
+    
+    std::string m_path;
+    
 	FontList m_fonts;
 
 };

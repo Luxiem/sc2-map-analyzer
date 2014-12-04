@@ -12,11 +12,11 @@ namespace UV
     VStack();
     ~VStack();
 
-    void SetPosition(int a_x, int a_y);
-
     void GetRect(RECT& a_rect);
 
     void Space(int y) { m_y += y; }
+
+	void SetAlignmentY(Align a_alignY);
 
   protected:
 
@@ -25,7 +25,6 @@ namespace UV
     void OnChildAdded(Widget* a_widget);
     void OnChildRemoved(Widget* a_widget);
 
-    int m_x;
-    int m_y;
+	Align m_alignY;
   };
 }

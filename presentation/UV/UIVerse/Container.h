@@ -35,6 +35,10 @@ namespace UV
 
     virtual void SetBorder(int a_borderWidth, unsigned long a_borderColour);
 
+	virtual void SetBackgroundColour(unsigned long a_backgroundColour) { m_backgroundColour = a_backgroundColour; }
+
+	virtual void SetPosition(int a_x, int a_y);
+
   protected:
 
     virtual void OnChildAdded(Widget* a_widget) {}
@@ -45,5 +49,11 @@ namespace UV
 
     int m_borderWidth;
     unsigned long m_borderColour;
+
+	unsigned long m_backgroundColour;
+
+	// Position?
+	long m_x;
+	long m_y;
   };
 }

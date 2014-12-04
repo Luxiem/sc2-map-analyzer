@@ -278,6 +278,7 @@ public:
   void calculateInfluence();
   void assignMainNatThirdIslands();
   void calculatePositionalBalance();
+  void calculateGeyserBalance();
 
   bool getNearestBase( Resource* r, Base** bOut );
   void addToBaseTotals( Base* b, Resource* r );

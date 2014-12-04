@@ -11,6 +11,11 @@
 
 #include <string>
 
+#ifdef _WINDOWS
+#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+// Windows Header Files:
+#include <windows.h>
+#endif
 
 // Model - Sc2Map instance
 // View - OpenGL context
@@ -32,11 +37,17 @@ public:
   // TODO Add callback function
   // TODO threaded
 	static void beginLoadMap(std::string a_fileName);
-	
+
+#ifdef _WINDOWS
+	static HWND getHwnd();
+#endif
+    
   // TODO Not used ???
   // Save a PNG image of the current analysis
 	static void SaveImage(std::string a_fileName);
 
+    static bool Quit();
+    
   // Draw a frame of UI and Map View
 	static void DrawScreen();
 	
@@ -61,6 +72,11 @@ public:
 
   //
   static void Log(const char* a_msg);
+    
+    //
+    static View* GetView() { return s_view; }
+    
+    static std::string getPath();
 		
 protected:
 	

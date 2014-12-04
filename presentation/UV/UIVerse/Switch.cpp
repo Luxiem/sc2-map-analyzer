@@ -163,8 +163,8 @@ void Switch::Draw()
     decl2.Color3 = 0xff555555;
     decl2.Fill = true;
     decl2.Rect.left += 2;
-    decl2.Rect.right -= 3;
-    decl2.Rect.top += 3;
+    decl2.Rect.right -= 2;
+    decl2.Rect.top += 2;
     decl2.Rect.bottom -= 2;
     a_rm->Draw(decl2);
   }
@@ -176,7 +176,7 @@ void Switch::Draw()
     {
       DrawManager::GetFontManager()->Draw(
         m_rect.right + 4, 
-        m_rect.bottom - 4,
+        m_rect.bottom - 0, //4,
         0, // Font type
         m_text.c_str());
     }

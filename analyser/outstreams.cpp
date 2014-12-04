@@ -74,7 +74,7 @@ void printError( const char* format, ... )
 
   va_list va_args;
   va_start(va_args, format);
-  _vsnprintf(sp, 2048, format, va_args);
+  vsnprintf(sp, 2048, format, va_args);
   va_end(va_args);
 
   warningOrErrorReported = true;

@@ -20,7 +20,7 @@ namespace UV
     bool OnMousePressed(unsigned short a_x, unsigned short a_y);
     bool OnMouseReleased(unsigned short a_x, unsigned short a_y);
 
-    void Draw();
+    virtual void Draw();
 
     void SetText(const char* text, unsigned long colour);
 

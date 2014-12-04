@@ -1,14 +1,13 @@
 #include "FontManager.h"
 #include <string>
-#include <Windows.h>
-#include <GL/gl.h>
-
-#include "FTGL/ftgl.h"
-
+#include "SDL.h"
+#include "SDL_ttf.h"
+#include "Common.h"
 
 FontManager::FontManager()
 {
-  m_height = 0;
+    m_height = 0;
+    m_renderer = 0;
 }
 
 
@@ -26,73 +25,109 @@ FontManager::~FontManager()
 }
 
 
-void FontManager::Init()
+void FontManager::Init(SDL_Renderer* a_renderer, std::string a_path)
 {
+    m_renderer = a_renderer;
+    m_path = a_path;
+    
   if (!IsInit())
   {
-	  GetFont("arial.ttf", 12);
-	  GetFont("arial.ttf", 16);
-	  GetFont("arial.ttf", 14);
+      TTF_Init();
+      
+	  //LoadFont(0, "Arial Narrow Bold.ttf", 12);
+	  //LoadFont(1, "Arial Narrow Bold.ttf", 16);
+	  //LoadFont(2, "Arial Narrow Bold.ttf", 14);
+	  LoadFont(0, "FreeSansBold.ttf", 12);
+	  LoadFont(1, "FreeSansBold.ttf", 16);
+	  LoadFont(2, "FreeSansBold.ttf", 14);
   }
 }
 
 
 bool FontManager::IsInit()
 {
-  return false;
+  return TTF_WasInit();
 }
 
 
-FTFont* FontManager::GetFont(const char *filename, int size)
+TTF_Font* FontManager::LoadFont(int a_type, const char *filename, int size)
 {
 	using namespace std;
 	
-	char buf[256];
-	sprintf(buf, "%s%i", filename, size);
-	string fontKey = string(buf);
-	
-	FontIter result = m_fonts.find(fontKey);
+	FontIter result = m_fonts.find(a_type);
 	if(result != m_fonts.end())
 	{
 		return result->second;
 	}
 	
-	string path = "";
-	string fullname = path + string(filename);
-	FTFont* font = new FTTextureFont(fullname.c_str());	
-  //FTFont* font = new FTPixmapFont(fullname.c_str());	
-
-	if(!font->FaceSize(size))
-	{
-		delete font;
-		return NULL;
-	}
+	string path = m_path;
 	
-	m_fonts[fontKey] = font;
+	string fullname = /*path + "/" + */string(filename);
+    //string fullname = string("/Library/Fonts/") + string(filename);
+    
+    TTF_Font* font = TTF_OpenFont(fullname.c_str(), size);
+	
+	m_fonts[a_type] = font;
 	
 	return font;
 }
 
 
+TTF_Font* FontManager::GetFont(int a_type)
+{
+	FontIter result = m_fonts.find(a_type);
+	if(result != m_fonts.end())
+	{
+		return result->second;
+	}
+    
+    return NULL;
+}
+
+
 void FontManager::Draw(float x, float y, int type, const char *txt)
 {
-	FTFont* font = 0;
-	if (type == 0) font = GetFont("arial.ttf", 12);
-	else if (type == 1) font = GetFont("arial.ttf", 16);
-	else if (type == 2) font = GetFont("arial.ttf", 14);
+	TTF_Font* font = GetFont(type);
+
 	if (font)
 	{
-		FTPoint point(x, m_height - y);
-		
-		glColor3f(0.f, 0.f, 0.f);		
-		font->Render(txt, -1, point);
-		
-		if (type > 0)
-		{
-			FTPoint point2(x - 1.f, m_height - y + 1.f);
-			glColor3f(1.f, 1.f, 1.f);
-			font->Render(txt, -1, point2);
-		}				
+
+        SDL_Color col = { 0x00, 0x00, 0x00, 0xff };
+        
+        {
+        SDL_Surface* s = TTF_RenderText_Blended(font, txt, col);
+        SDL_Texture *texture = SDL_CreateTextureFromSurface(m_renderer, s);
+
+        int iW, iH;
+        SDL_QueryTexture(texture, NULL, NULL, &iW, &iH);
+
+        SDL_Rect dest = {(int)x, (int)y - iH, iW, iH};
+        SDL_RenderCopy(m_renderer, texture, 0, &dest);
+        
+        SDL_FreeSurface(s);
+        SDL_DestroyTexture(texture);
+        }
+        
+        if (type > 0)
+        {
+            //col = (SDL_Color){ 0xff, 0xff, 0xff, 0xff };
+			col.a = 0xff;
+			col.r = 0xff;
+			col.g = 0xff;
+			col.b = 0xff;
+
+            SDL_Surface* s = TTF_RenderText_Blended(font, txt, col);
+            SDL_Texture *texture = SDL_CreateTextureFromSurface(m_renderer, s);
+            
+            int iW, iH;
+            SDL_QueryTexture(texture, NULL, NULL, &iW, &iH);
+            
+            SDL_Rect dest = {(int)x - 1, (int)y - iH - 1, iW, iH};
+            SDL_RenderCopy(m_renderer, texture, 0, &dest);
+            
+            SDL_FreeSurface(s);
+            SDL_DestroyTexture(texture);
+        }
 	}
 }
 

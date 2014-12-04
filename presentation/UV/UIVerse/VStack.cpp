@@ -9,18 +9,13 @@ VStack::VStack()
 {
   m_x = 0;
   m_y = 0;
+
+  m_alignY = ALIGN_NEAR;
 }
 
 
 VStack::~VStack()
 {
-}
-
-
-void VStack::SetPosition(int a_x, int a_y)
-{
-  m_x = a_x;
-  m_y = a_y;
 }
 
 
@@ -74,6 +69,12 @@ void VStack::GetHeight(int& a_height)
     a_height += (rect.bottom - rect.top);
     a_height += 12;// padding
   }
+}
+
+
+void VStack::SetAlignmentY(Align a_alignY)
+{
+	m_alignY = a_alignY;
 }
 
 

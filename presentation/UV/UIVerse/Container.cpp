@@ -11,6 +11,11 @@ Container::Container() : Widget()
 {
   m_borderWidth = 0;
   m_borderColour = 0;
+
+  m_backgroundColour = 0;
+
+  m_x = 0;
+  m_y = 0;
 }
 
 
@@ -27,11 +32,6 @@ void Container::Add(Widget* a_element)
 
 void Container::Draw()
 {
-  for (size_t i = 0; i < m_elements.size(); ++i)
-  {
-    m_elements[i]->Draw();
-  }
-
   if (m_borderWidth)
   {
     RectManager* rm = DrawManager::GetRectManager();
@@ -43,6 +43,29 @@ void Container::Draw()
     r.Color2 = m_borderColour;
     r.Color3 = m_borderColour;
     rm->Draw(r);
+  }
+
+  if (m_backgroundColour)
+  {
+	RectManager* rm = DrawManager::GetRectManager();
+    UV::Declaration2 r;
+    //GetRect(r.Rect);
+	r.Rect.left = m_x;
+	r.Rect.top = m_y;
+	r.Rect.right = m_x + 270;
+	r.Rect.bottom = m_y + 96;
+    r.Fill = true;
+    r.Color0 = m_backgroundColour;
+    r.Color1 = m_backgroundColour;
+    r.Color2 = m_backgroundColour;
+    r.Color3 = m_backgroundColour;
+    rm->Draw(r);
+  }
+
+  // Draw children
+  for (size_t i = 0; i < m_elements.size(); ++i)
+  {
+    m_elements[i]->Draw();
   }
 }
 
@@ -126,11 +149,33 @@ void Container::GetRect(RECT& a_rect)
   }
 }
 
+
 void Container::SetBorder(int a_borderWidth, unsigned long a_borderColour)
 {
   m_borderWidth = a_borderWidth;
   m_borderColour = a_borderColour;
 }
 
+
+void Container::SetPosition(int a_x, int a_y)
+{
+	// Move all children
+    RECT rect;
+	long dx;
+	long dy;
+
+  for (size_t i = 0; i < m_elements.size(); ++i)
+  {
+    m_elements[i]->GetRect(rect);
+
+    dx = -m_x + a_x;
+	dy = -m_y + a_y;
+
+	m_elements[i]->SetPosition(rect.left + dx, rect.top + dy);
+  }
+
+  m_x = a_x;
+  m_y = a_y;
+}
 
 } // namespace

@@ -25,6 +25,7 @@ void SC2Map::analyzeBases() {
   assignMainNatThirdIslands();
   computeSpaceInMain();
   calculatePositionalBalance();
+  calculateGeyserBalance();
 }
 
 
@@ -859,6 +860,123 @@ void SC2Map::calculatePositionalBalance() {
   }
 }
 
+
+void SC2Map::calculateGeyserBalance() {
+    
+    // Loop all bases
+    for( list<Base*>::const_iterator i = bases.begin();
+         i != bases.end();
+         ++i ) {
+    
+        Base* base = *i;
+        
+        if (base == 0) continue;
+        
+        base->geyserEfficiency.clear();
+
+        // Loop all resources for this base
+        for( list<Resource*>::const_iterator j = base->resources.begin();
+            j != base->resources.end();
+            ++j ) {
+            
+            Resource* resource = *j;
+            
+            // Vespene geysers
+            if (resource->type == VESPENEGAS || resource->type == VESPENEGAS_HY)
+            {                
+                int dx = -base->loc.mx + resource->loc.mx;
+                int dy = base->loc.my - resource->loc.my;
+                
+                // Calculate the balance of the relative (dx, dy) position of the geyser
+                int t = -1;
+                
+                if (dy == -7)
+                {
+                    if (dx == -5)
+                    {
+                        t = 1371; // E 90-135
+                    }
+                    else if (dx == -4)
+                    {
+                        t = 1304; // D 90-135
+                    }
+                    else if (dx == 4)
+                    {
+                        t = 1338; // D 45-90
+                    }
+                    else if (dx == 5)
+                    {
+                        t = 1377; // E 45-90
+                    }
+                    else if (dx >= -3 && dx <= 3)
+                    {
+                        t = 1291;
+                    }
+                }
+                else if (dy == -6)
+                {
+                    if (dx == -6)
+                        t = 1388; // F 135
+                    else if (dx == 6)
+                        t = 1320; // F 45
+                }
+                else if (dy == -5)
+                {
+                    if (dx == -7)
+                    {
+                        t = 1320; // E 135-180
+                    }
+                    else if (dx == 7)
+                    {
+                        t = 1395; // E 0-45
+                    }
+                }
+                else if (dy >= -4 && dy <= 4)
+                {
+                    if (dx == 7 || dx == -7)
+                        t = 1291;
+                }
+                else if (dy == 5)
+                {
+                    if (dx == -7)
+                    {
+                        t = 1395; // E 180-255
+                    }
+                    else if (dx == 7)
+                    {
+                        t = 1338; // E 315-360
+                    }
+                }
+                else if (dy == 6)
+                {
+                    if (dx == -6)
+                        t = 1320; // F 225
+                    else if (dx == 6)
+                        t = 1388; // F 315
+                }
+                else if (dy == 7)
+                {
+                    if (dx == -5)
+                    {
+                        t = 1395; // E 255-270
+                    }
+                    else if (dx == 5)
+                    {
+                        t = 1320; // E 270-315
+                    }
+                    else if (dx >= -4 && dx <= 4)
+                    {
+                        t = 1291;
+                    }
+                }
+                
+                base->geyserEfficiency[resource] = t;
+
+            }
+        }
+    }
+    
+}
 
 
 

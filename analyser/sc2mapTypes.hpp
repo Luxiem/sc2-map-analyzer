@@ -208,6 +208,9 @@ struct Base {
 
   // for main/nat/third classification
   map<StartLoc*, float> sl2averageInfluence;
+    
+  // Geyser efficiency
+  map<Resource*, int> geyserEfficiency;
 };
 
 
