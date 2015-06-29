@@ -47,6 +47,12 @@ public:
     int SiegeMapType();
 
     void OnMapLoaded(SC2Map* a_map);
+    
+    // Returns if an update is required
+    bool NeedsUpdate();
+    
+    // Tells the controller that the update has happened
+    void Updated();
 
 protected:
 

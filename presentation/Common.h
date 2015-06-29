@@ -6,7 +6,7 @@
 
 
 // Map Analyser version
-#define VALG 1.8
+#define VALG 1.9
 
 
 #include <string>

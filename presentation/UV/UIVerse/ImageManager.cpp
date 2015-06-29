@@ -49,8 +49,8 @@ void ImageManager::Draw(unsigned long a_id, unsigned long a_x, unsigned long a_y
 		m_imageData[id] = tex;
 	}
 	
-	int width = surface->w;
-	int height = surface->h;
+    int width = surface ? surface->w : 0;
+    int height = surface ? surface->h : 0;
 
     SDL_Rect dest = {(int)a_x, (int)a_y, width, height};
     SDL_RenderCopy(renderer, tex, 0, &dest);

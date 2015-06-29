@@ -48,6 +48,9 @@ public:
   void SetPath(int a_pathSpawnA, int a_pathBaseA, int a_pathSpawnB, int a_pathBaseB);
 
     SDL_Renderer* Renderer() { return m_renderer; }
+    
+    // Draw the map again
+    void NeedsUpdate() { m_updateMap = true; }
 
 #ifdef _WINDOWS
 	HWND getHwnd();
@@ -56,6 +59,7 @@ public:
 protected:
 
   SC2Map* m_sc2map;
+  bool m_updateMap;
 	
   // Controller for this view
   Controller* m_controller;

@@ -12,6 +12,15 @@
 		364636F818F229CA0081C853 /* OpenGL.framework in Resources */ = {isa = PBXBuildFile; fileRef = 4F10347817C70E8100F1D853 /* OpenGL.framework */; };
 		36E4904718ED898200BE9EE7 /* UVLabel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36E4904318ED898200BE9EE7 /* UVLabel.cpp */; };
 		36E4904818ED898200BE9EE7 /* UVTab.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36E4904518ED898200BE9EE7 /* UVTab.cpp */; };
+		36F3B63D1B40E39200386189 /* tinystr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36F3B6371B40E39200386189 /* tinystr.cpp */; };
+		36F3B63E1B40E39200386189 /* tinyxml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36F3B6391B40E39200386189 /* tinyxml.cpp */; };
+		36F3B63F1B40E39200386189 /* tinyxmlerror.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36F3B63B1B40E39200386189 /* tinyxmlerror.cpp */; };
+		36F3B6401B40E39200386189 /* tinyxmlparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36F3B63C1B40E39200386189 /* tinyxmlparser.cpp */; };
+		36F3B6421B40E57F00386189 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 36F3B6411B40E57F00386189 /* main.mm */; };
+		36F3B64D1B40FBFF00386189 /* SDL2_framerate.c in Sources */ = {isa = PBXBuildFile; fileRef = 36F3B6441B40FBFF00386189 /* SDL2_framerate.c */; };
+		36F3B64E1B40FBFF00386189 /* SDL2_gfxPrimitives.c in Sources */ = {isa = PBXBuildFile; fileRef = 36F3B6471B40FBFF00386189 /* SDL2_gfxPrimitives.c */; };
+		36F3B64F1B40FBFF00386189 /* SDL2_imageFilter.c in Sources */ = {isa = PBXBuildFile; fileRef = 36F3B6491B40FBFF00386189 /* SDL2_imageFilter.c */; };
+		36F3B6501B40FBFF00386189 /* SDL2_rotozoom.c in Sources */ = {isa = PBXBuildFile; fileRef = 36F3B64B1B40FBFF00386189 /* SDL2_rotozoom.c */; };
 		4F1F82BF17EEBB1E00952977 /* Common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F1F82B317EEBB1E00952977 /* Common.cpp */; };
 		4F1F82C017EEBB1E00952977 /* Controller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F1F82B517EEBB1E00952977 /* Controller.cpp */; };
 		4F1F82C117EEBB1E00952977 /* FontManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4F1F82B717EEBB1E00952977 /* FontManager.cpp */; };
@@ -53,12 +62,7 @@
 		4FC2097017D0670C000AC886 /* UIVerse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC2095817D0670C000AC886 /* UIVerse.cpp */; };
 		4FC2097117D0670C000AC886 /* VStack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC2095A17D0670C000AC886 /* VStack.cpp */; };
 		4FC2097217D0670C000AC886 /* UV.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC2095D17D0670C000AC886 /* UV.cpp */; };
-		4FC20B2517D0693D000AC886 /* tinystr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC20B1F17D0693D000AC886 /* tinystr.cpp */; };
-		4FC20B2617D0693D000AC886 /* tinyxml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC20B2117D0693D000AC886 /* tinyxml.cpp */; };
-		4FC20B2717D0693D000AC886 /* tinyxmlerror.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC20B2317D0693D000AC886 /* tinyxmlerror.cpp */; };
-		4FC20B2817D0693D000AC886 /* tinyxmlparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FC20B2417D0693D000AC886 /* tinyxmlparser.cpp */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
-		8D11072D0486CEB800E47090 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.mm */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		F23B78861A25673E0031B77C /* ImageButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F23B78821A2566BD0031B77C /* ImageButton.cpp */; };
 		F23B78871A2567440031B77C /* ImageManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F23B78841A2566BD0031B77C /* ImageManager.cpp */; };
@@ -92,7 +96,6 @@
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
-		29B97316FDCFA39411CA2CEA /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		36361A6F19014C4100B529C4 /* colour.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = colour.h; path = ../../presentation/colour.h; sourceTree = "<group>"; };
@@ -101,6 +104,22 @@
 		36E4904418ED898200BE9EE7 /* UVLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UVLabel.h; sourceTree = "<group>"; };
 		36E4904518ED898200BE9EE7 /* UVTab.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UVTab.cpp; sourceTree = "<group>"; };
 		36E4904618ED898200BE9EE7 /* UVTab.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UVTab.h; sourceTree = "<group>"; };
+		36F3B6371B40E39200386189 /* tinystr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tinystr.cpp; path = ../../../../dev/tinyxml/tinystr.cpp; sourceTree = "<group>"; };
+		36F3B6381B40E39200386189 /* tinystr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tinystr.h; path = ../../../../dev/tinyxml/tinystr.h; sourceTree = "<group>"; };
+		36F3B6391B40E39200386189 /* tinyxml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tinyxml.cpp; path = ../../../../dev/tinyxml/tinyxml.cpp; sourceTree = "<group>"; };
+		36F3B63A1B40E39200386189 /* tinyxml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tinyxml.h; path = ../../../../dev/tinyxml/tinyxml.h; sourceTree = "<group>"; };
+		36F3B63B1B40E39200386189 /* tinyxmlerror.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tinyxmlerror.cpp; path = ../../../../dev/tinyxml/tinyxmlerror.cpp; sourceTree = "<group>"; };
+		36F3B63C1B40E39200386189 /* tinyxmlparser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tinyxmlparser.cpp; path = ../../../../dev/tinyxml/tinyxmlparser.cpp; sourceTree = "<group>"; };
+		36F3B6411B40E57F00386189 /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
+		36F3B6441B40FBFF00386189 /* SDL2_framerate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL2_framerate.c; path = "../../../../dev/SDL2_gfx-1.0.1/SDL2_framerate.c"; sourceTree = "<group>"; };
+		36F3B6451B40FBFF00386189 /* SDL2_framerate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL2_framerate.h; path = "../../../../dev/SDL2_gfx-1.0.1/SDL2_framerate.h"; sourceTree = "<group>"; };
+		36F3B6461B40FBFF00386189 /* SDL2_gfxPrimitives_font.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL2_gfxPrimitives_font.h; path = "../../../../dev/SDL2_gfx-1.0.1/SDL2_gfxPrimitives_font.h"; sourceTree = "<group>"; };
+		36F3B6471B40FBFF00386189 /* SDL2_gfxPrimitives.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL2_gfxPrimitives.c; path = "../../../../dev/SDL2_gfx-1.0.1/SDL2_gfxPrimitives.c"; sourceTree = "<group>"; };
+		36F3B6481B40FBFF00386189 /* SDL2_gfxPrimitives.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL2_gfxPrimitives.h; path = "../../../../dev/SDL2_gfx-1.0.1/SDL2_gfxPrimitives.h"; sourceTree = "<group>"; };
+		36F3B6491B40FBFF00386189 /* SDL2_imageFilter.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL2_imageFilter.c; path = "../../../../dev/SDL2_gfx-1.0.1/SDL2_imageFilter.c"; sourceTree = "<group>"; };
+		36F3B64A1B40FBFF00386189 /* SDL2_imageFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL2_imageFilter.h; path = "../../../../dev/SDL2_gfx-1.0.1/SDL2_imageFilter.h"; sourceTree = "<group>"; };
+		36F3B64B1B40FBFF00386189 /* SDL2_rotozoom.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL2_rotozoom.c; path = "../../../../dev/SDL2_gfx-1.0.1/SDL2_rotozoom.c"; sourceTree = "<group>"; };
+		36F3B64C1B40FBFF00386189 /* SDL2_rotozoom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL2_rotozoom.h; path = "../../../../dev/SDL2_gfx-1.0.1/SDL2_rotozoom.h"; sourceTree = "<group>"; };
 		4F10347817C70E8100F1D853 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		4F1F82B317EEBB1E00952977 /* Common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Common.cpp; path = ../../presentation/Common.cpp; sourceTree = SOURCE_ROOT; };
 		4F1F82B417EEBB1E00952977 /* Common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Common.h; path = ../../presentation/Common.h; sourceTree = SOURCE_ROOT; };
@@ -179,12 +198,6 @@
 		4FC2095C17D0670C000AC886 /* Widget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Widget.h; sourceTree = "<group>"; };
 		4FC2095D17D0670C000AC886 /* UV.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UV.cpp; path = ../../presentation/UV/UV.cpp; sourceTree = SOURCE_ROOT; };
 		4FC2095E17D0670C000AC886 /* UV.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UV.h; path = ../../presentation/UV/UV.h; sourceTree = SOURCE_ROOT; };
-		4FC20B1F17D0693D000AC886 /* tinystr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tinystr.cpp; path = ../../../tinyxml/tinystr.cpp; sourceTree = SOURCE_ROOT; };
-		4FC20B2017D0693D000AC886 /* tinystr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tinystr.h; path = ../../../tinyxml/tinystr.h; sourceTree = SOURCE_ROOT; };
-		4FC20B2117D0693D000AC886 /* tinyxml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tinyxml.cpp; path = ../../../tinyxml/tinyxml.cpp; sourceTree = SOURCE_ROOT; };
-		4FC20B2217D0693D000AC886 /* tinyxml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tinyxml.h; path = ../../../tinyxml/tinyxml.h; sourceTree = SOURCE_ROOT; };
-		4FC20B2317D0693D000AC886 /* tinyxmlerror.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tinyxmlerror.cpp; path = ../../../tinyxml/tinyxmlerror.cpp; sourceTree = SOURCE_ROOT; };
-		4FC20B2417D0693D000AC886 /* tinyxmlparser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tinyxmlparser.cpp; path = ../../../tinyxml/tinyxmlparser.cpp; sourceTree = SOURCE_ROOT; };
 		8D1107310486CEB800E47090 /* SC2MA-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "SC2MA-Info.plist"; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* SC2MA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SC2MA.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F23B78821A2566BD0031B77C /* ImageButton.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ImageButton.cpp; sourceTree = "<group>"; };
@@ -243,6 +256,7 @@
 		29B97314FDCFA39411CA2CEA /* XGL */ = {
 			isa = PBXGroup;
 			children = (
+				36F3B6431B40FBD300386189 /* Other src */,
 				4FC208EA17D065A6000AC886 /* dependencies */,
 				4FC208E917D06597000AC886 /* project */,
 				4F103C2C17C8CC6900F1D853 /* analyser */,
@@ -270,10 +284,34 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		36F3B6431B40FBD300386189 /* Other src */ = {
+			isa = PBXGroup;
+			children = (
+				36F3B6511B40FC0400386189 /* sdl2_gfx */,
+				4FC20B1C17D0691D000AC886 /* tinyxml */,
+			);
+			name = "Other src";
+			sourceTree = "<group>";
+		};
+		36F3B6511B40FC0400386189 /* sdl2_gfx */ = {
+			isa = PBXGroup;
+			children = (
+				36F3B6441B40FBFF00386189 /* SDL2_framerate.c */,
+				36F3B6451B40FBFF00386189 /* SDL2_framerate.h */,
+				36F3B6461B40FBFF00386189 /* SDL2_gfxPrimitives_font.h */,
+				36F3B6471B40FBFF00386189 /* SDL2_gfxPrimitives.c */,
+				36F3B6481B40FBFF00386189 /* SDL2_gfxPrimitives.h */,
+				36F3B6491B40FBFF00386189 /* SDL2_imageFilter.c */,
+				36F3B64A1B40FBFF00386189 /* SDL2_imageFilter.h */,
+				36F3B64B1B40FBFF00386189 /* SDL2_rotozoom.c */,
+				36F3B64C1B40FBFF00386189 /* SDL2_rotozoom.h */,
+			);
+			name = sdl2_gfx;
+			sourceTree = "<group>";
+		};
 		4F103C2C17C8CC6900F1D853 /* analyser */ = {
 			isa = PBXGroup;
 			children = (
-				4FC20B1C17D0691D000AC886 /* tinyxml */,
 				4FC208FE17D0662A000AC886 /* bases.cpp */,
 				4FC208FF17D0662A000AC886 /* bookkeeping.cpp */,
 				4FC2090017D0662A000AC886 /* config.cpp */,
@@ -306,7 +344,7 @@
 		4FC208E917D06597000AC886 /* project */ = {
 			isa = PBXGroup;
 			children = (
-				29B97316FDCFA39411CA2CEA /* main.mm */,
+				36F3B6411B40E57F00386189 /* main.mm */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
@@ -415,12 +453,12 @@
 		4FC20B1C17D0691D000AC886 /* tinyxml */ = {
 			isa = PBXGroup;
 			children = (
-				4FC20B1F17D0693D000AC886 /* tinystr.cpp */,
-				4FC20B2017D0693D000AC886 /* tinystr.h */,
-				4FC20B2117D0693D000AC886 /* tinyxml.cpp */,
-				4FC20B2217D0693D000AC886 /* tinyxml.h */,
-				4FC20B2317D0693D000AC886 /* tinyxmlerror.cpp */,
-				4FC20B2417D0693D000AC886 /* tinyxmlparser.cpp */,
+				36F3B6371B40E39200386189 /* tinystr.cpp */,
+				36F3B6381B40E39200386189 /* tinystr.h */,
+				36F3B6391B40E39200386189 /* tinyxml.cpp */,
+				36F3B63A1B40E39200386189 /* tinyxml.h */,
+				36F3B63B1B40E39200386189 /* tinyxmlerror.cpp */,
+				36F3B63C1B40E39200386189 /* tinyxmlparser.cpp */,
 			);
 			name = tinyxml;
 			sourceTree = "<group>";
@@ -452,6 +490,8 @@
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "SC2MA" */;
 			compatibilityVersion = "Xcode 3.1";
 			developmentRegion = English;
@@ -485,18 +525,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8D11072D0486CEB800E47090 /* main.mm in Sources */,
+				36F3B6421B40E57F00386189 /* main.mm in Sources */,
 				4FC2091717D0662A000AC886 /* bases.cpp in Sources */,
+				36F3B63E1B40E39200386189 /* tinyxml.cpp in Sources */,
 				4FC2091817D0662A000AC886 /* bookkeeping.cpp in Sources */,
 				4FC2091917D0662A000AC886 /* config.cpp in Sources */,
 				4FC2091A17D0662A000AC886 /* coordinates.cpp in Sources */,
 				4FC2091B17D0662A000AC886 /* debug.cpp in Sources */,
+				36F3B64E1B40FBFF00386189 /* SDL2_gfxPrimitives.c in Sources */,
 				4FC2091C17D0662A000AC886 /* dijkstra.cpp in Sources */,
 				4FC2091D17D0662A000AC886 /* openness.cpp in Sources */,
 				4FC2091E17D0662A000AC886 /* outstreams.cpp in Sources */,
 				4FC2091F17D0662A000AC886 /* pathing.cpp in Sources */,
 				4FC2092017D0662A000AC886 /* placedobjects.cpp in Sources */,
 				4FC2092117D0662A000AC886 /* PrioQueue.cpp in Sources */,
+				36F3B63F1B40E39200386189 /* tinyxmlerror.cpp in Sources */,
 				4FC2092217D0662A000AC886 /* read.cpp in Sources */,
 				4FC2092317D0662A000AC886 /* SC2Map.cpp in Sources */,
 				4FC2092417D0662A000AC886 /* SC2MapAggregator.cpp in Sources */,
@@ -506,32 +549,33 @@
 				4FC2096017D0670C000AC886 /* Button.cpp in Sources */,
 				4FC2096117D0670C000AC886 /* Combo.cpp in Sources */,
 				36361A711901507500B529C4 /* colour.cpp in Sources */,
+				36F3B64F1B40FBFF00386189 /* SDL2_imageFilter.c in Sources */,
 				36E4904818ED898200BE9EE7 /* UVTab.cpp in Sources */,
 				4FC2096217D0670C000AC886 /* Container.cpp in Sources */,
 				4FC2096317D0670C000AC886 /* DrawManager.cpp in Sources */,
 				4FC2096417D0670C000AC886 /* HStack.cpp in Sources */,
 				4FC2096517D0670C000AC886 /* List.cpp in Sources */,
 				4FC2096617D0670C000AC886 /* Page.cpp in Sources */,
+				36F3B6401B40E39200386189 /* tinyxmlparser.cpp in Sources */,
 				4FC2096717D0670C000AC886 /* UVRectManager.cpp in Sources */,
 				4FC2096817D0670C000AC886 /* ResourceManager.cpp in Sources */,
 				4FC2096917D0670C000AC886 /* Slider.cpp in Sources */,
 				4FC2096A17D0670C000AC886 /* SpriteManager.cpp in Sources */,
 				4FC2096B17D0670C000AC886 /* Stack.cpp in Sources */,
+				36F3B6501B40FBFF00386189 /* SDL2_rotozoom.c in Sources */,
 				4FC2096C17D0670C000AC886 /* Switch.cpp in Sources */,
+				36F3B64D1B40FBFF00386189 /* SDL2_framerate.c in Sources */,
 				4FC2096D17D0670C000AC886 /* TextBox.cpp in Sources */,
 				4FC2096E17D0670C000AC886 /* ToggleButton.cpp in Sources */,
 				4FC2096F17D0670C000AC886 /* ToggleGroup.cpp in Sources */,
 				4FC2097017D0670C000AC886 /* UIVerse.cpp in Sources */,
 				4FC2097117D0670C000AC886 /* VStack.cpp in Sources */,
 				4FC2097217D0670C000AC886 /* UV.cpp in Sources */,
-				4FC20B2517D0693D000AC886 /* tinystr.cpp in Sources */,
 				36E4904718ED898200BE9EE7 /* UVLabel.cpp in Sources */,
-				4FC20B2617D0693D000AC886 /* tinyxml.cpp in Sources */,
-				4FC20B2717D0693D000AC886 /* tinyxmlerror.cpp in Sources */,
-				4FC20B2817D0693D000AC886 /* tinyxmlparser.cpp in Sources */,
 				4F1F82BF17EEBB1E00952977 /* Common.cpp in Sources */,
 				4F1F82C017EEBB1E00952977 /* Controller.cpp in Sources */,
 				4F1F82C117EEBB1E00952977 /* FontManager.cpp in Sources */,
+				36F3B63D1B40E39200386189 /* tinystr.cpp in Sources */,
 				4F1F82C317EEBB1E00952977 /* RectManager.cpp in Sources */,
 				4F1F82C417EEBB1E00952977 /* View.cpp in Sources */,
 				F23B78861A25673E0031B77C /* ImageButton.cpp in Sources */,
@@ -561,7 +605,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local,
-					/Users/local_user/Documents/SC2dev/Archive/libraries,
+					"\"$(SRCROOT)/../../libraries\"",
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
@@ -572,10 +616,11 @@
 				HEADER_SEARCH_PATHS = (
 					"../UV/**",
 					"/Users/local_user/Documents/libraries/**",
-					/Users/local_user/Documents/SC2dev/Archive/libraries/StormLib.framework/Versions/A/Headers,
-					/Users/local_user/Documents/SC2dev/Archive/libraries/SDL2.framework/Versions/A/Headers,
-					/Users/local_user/Documents/SC2dev/Archive/libraries/SDL2_ttf.framework/Versions/A/Headers,
-					/Users/local_user/Documents/SC2dev/Archive/libraries/SDL2_image.framework/Versions/A/Headers,
+					"\"$(SRCROOT)/../../libraries/StormLib.framework/Headers\"",
+					"\"$(SRCROOT)/../../../../dev/tinyxml\"",
+					"\"$(SRCROOT)/../../libraries/SDL2.framework/Headers\"",
+					"\"$(SRCROOT)/../../libraries/SDL2_ttf.framework/Headers\"",
+					"\"$(SRCROOT)/../../libraries/SDL2_image.framework/Headers\"",
 				);
 				INFOPLIST_FILE = "SC2MA-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
@@ -583,7 +628,7 @@
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = SC2MA;
-				SDKROOT = macosx10.8;
+				SDKROOT = macosx;
 				SYMROOT = build;
 				VALID_ARCHS = x86_64;
 			};
@@ -598,7 +643,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local,
-					/Users/local_user/Documents/SC2dev/Archive/libraries,
+					"\"$(SRCROOT)/../../libraries\"",
 				);
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
@@ -606,10 +651,11 @@
 				HEADER_SEARCH_PATHS = (
 					"../UV/**",
 					"/Users/local_user/Documents/libraries/**",
-					/Users/local_user/Documents/SC2dev/Archive/libraries/StormLib.framework/Versions/A/Headers,
-					/Users/local_user/Documents/SC2dev/Archive/libraries/SDL2.framework/Versions/A/Headers,
-					/Users/local_user/Documents/SC2dev/Archive/libraries/SDL2_ttf.framework/Versions/A/Headers,
-					/Users/local_user/Documents/SC2dev/Archive/libraries/SDL2_image.framework/Versions/A/Headers,
+					"\"$(SRCROOT)/../../libraries/StormLib.framework/Headers\"",
+					"\"$(SRCROOT)/../../../../dev/tinyxml\"",
+					"\"$(SRCROOT)/../../libraries/SDL2.framework/Headers\"",
+					"\"$(SRCROOT)/../../libraries/SDL2_ttf.framework/Headers\"",
+					"\"$(SRCROOT)/../../libraries/SDL2_image.framework/Headers\"",
 				);
 				INFOPLIST_FILE = "SC2MA-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
@@ -617,7 +663,7 @@
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PRODUCT_NAME = SC2MA;
-				SDKROOT = macosx10.8;
+				SDKROOT = macosx;
 				SYMROOT = build;
 			};
 			name = Release;
@@ -633,13 +679,13 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"/Users/jnmaloney/sc2map/lpng163/**",
-					"../StormLib/src/**",
 					"/usr/local/include/**",
 					"../UV/**",
-					"/Users/jmaloney/Documents/dev/SDL2_ttf-2.0.12",
+					"\"$(SRCROOT)/../../libraries/StormLib.framework/Headers\"",
+					"\"$(SRCROOT)/../../../../dev/StormLib/src\"",
 				);
 				LD_RUNPATH_SEARCH_PATHS = "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/ /Users/local_user/Documents/SC2dev/Archive/libraries/StormLib.framework /Users/local_user/Documents/SC2dev/Archive/libraries/";
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
 				SDKROOT = macosx;
@@ -657,13 +703,13 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"/Users/jnmaloney/sc2map/lpng163/**",
-					"../StormLib/src/**",
 					"/usr/local/include/**",
 					"../UV/**",
-					"/Users/jmaloney/Documents/dev/SDL2_ttf-2.0.12",
+					"\"$(SRCROOT)/../../libraries/StormLib.framework/Headers\"",
+					"\"$(SRCROOT)/../../../../dev/StormLib/src\"",
 				);
 				LD_RUNPATH_SEARCH_PATHS = "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/ /Users/local_user/Documents/SC2dev/Archive/libraries/StormLib.framework /Users/local_user/Documents/SC2dev/Archive/libraries/";
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
 				PREBINDING = NO;
 				SDKROOT = macosx;
 				VALID_ARCHS = x86_64;

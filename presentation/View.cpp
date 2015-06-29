@@ -36,6 +36,8 @@ View::View()
     
     m_window = 0;
     m_renderer = 0;
+    
+    m_updateMap = true;
 }
 
 
@@ -107,7 +109,7 @@ void View::DrawScreen()
     SDL_RenderClear(m_renderer);
     
 	// Render Frame Map
-    if (m_sc2map)
+    if (m_sc2map && m_updateMap)
 	{	
         if (m_targetTex == 0)
         {
@@ -122,11 +124,11 @@ void View::DrawScreen()
         if (m_controller)
             m_controller->m_core->OnClientAreaChanged(m_bufferWidth, m_bufferHeight);
     	
-		
         DrawMap();
         
-
         SDL_SetRenderTarget(m_renderer, NULL);
+        
+        m_updateMap = false;
     }
 	
 	if (m_controller)
@@ -246,9 +248,9 @@ void View::DrawMap()
 	y1 += 20;	
 	
 	// Footer
-	a = std::string("SC Map Analyser for HotS alpha, algorithms ");
-  a += std::string(QUOTEMACRO(VALG));
-	g_fm.Draw(x1, m_bufferHeight - 20, 2, a.c_str());
+    a = std::string("SC Map Analyser for HotS, algorithms ");
+    a += std::string(QUOTEMACRO(VALG));
+    g_fm.Draw(x1, m_bufferHeight - 20, 2, a.c_str());
 	
 	// Map grids:
 	
@@ -581,7 +583,6 @@ void View::DrawMap()
 		g_rm.DrawPath(m_pathG, 0, c2);
 		g_rm.DrawPath(m_pathC, 2, c3);
 
-    		
 		// Legend
 		std::string title = "";
 		

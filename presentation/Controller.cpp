@@ -693,3 +693,17 @@ void Controller::OnWindowSizeChanged(int a_width, int a_height)
 	m_mainMenu->SetPosition(0, y);
   }
 }
+
+
+bool Controller::NeedsUpdate()
+{
+    return MainUI::s_redraw;
+}
+
+
+void Controller::Updated()
+{
+    MainUI::s_redraw = false;
+}
+
+

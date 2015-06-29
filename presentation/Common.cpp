@@ -120,12 +120,12 @@ void Common::beginLoadMap(std::string a_fileName)
 	
 	// Init map object
 	if (s_sc2map) delete s_sc2map;
-	s_sc2map = new SC2Map(
-              "",
-						  localOutputPath,
-						  path,
-						  file,
-						  fileWithExt ); 
+    s_sc2map = new SC2Map(
+                          "",
+                          localOutputPath,
+                          path,
+                          file,
+                          fileWithExt );
 	
 	// Begin load
 	s_sc2map->readMap();
@@ -138,13 +138,13 @@ void Common::beginLoadMap(std::string a_fileName)
 	s_sc2map->analyzeBases();
 	  
 	// TODO - View
-	int bufferWidth = s_sc2map->txDimPlayable * 4 + 32;
-	int bufferHeight = s_sc2map->tyDimPlayable * 4 + 240;
+	//int bufferWidth = s_sc2map->txDimPlayable * 4 + 32;
+	//int bufferHeight = s_sc2map->tyDimPlayable * 4 + 240;
 
-  // Apply loaded map to view
-  s_view->SetMap(s_sc2map);
+    // Apply loaded map to view
+    s_view->SetMap(s_sc2map);
 
-  s_controller->OnMapLoaded(s_sc2map);
+    s_controller->OnMapLoaded(s_sc2map);
 }
 
 
@@ -338,6 +338,12 @@ bool Common::Quit() { return quit; }
 
 void Common::DrawScreen()
 {
+    if (s_controller->NeedsUpdate())
+    {
+        s_view->NeedsUpdate();
+        s_controller->Updated();
+    }
+    
     s_view->DrawScreen();
     
     // Process events
@@ -372,7 +378,6 @@ void Common::DrawScreen()
         {
             if (e.window.event == SDL_WINDOWEVENT_RESIZED)
             {
-                //s_view->OnClientAreaChanged(e.window.data1, e.window.data2);
 				OnClientAreaChanged(e.window.data1, e.window.data2);
             }
         }
@@ -382,6 +387,8 @@ void Common::DrawScreen()
             SDL_free(e.drop.file);
         }
     }
+    
+    SDL_Delay(33);
 }
 
 
