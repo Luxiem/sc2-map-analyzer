@@ -1234,9 +1234,10 @@ int SC2Map::readt3Terrain_xml( const HANDLE archive )
   {
     const char* strVersion = terrain->Attribute( "version" );
     if( strcmp( strVersion, "112" ) != 0 &&
-        strcmp( strVersion, "113" ) != 0 )
+        strcmp( strVersion, "113" ) != 0 && 
+		strcmp( strVersion, "114" ) != 0)
     {
-      printWarning( "%s is version %s, file version 112 or 113 expected.\n", strFilename, strVersion );
+      printWarning( "%s is version %s, file version 112 to 114 expected.\n", strFilename, strVersion );
       continueXML = false;
     }
   }

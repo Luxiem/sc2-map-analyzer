@@ -103,7 +103,6 @@ void SC2Map::processPlacedObject( ObjectMode objMode, TiXmlElement* object )
       exit( -1 );
   }
 
-
   // ignore groups, don't affect analysis
   if( strcmp( object->Value(), objGroup ) == 0 )
   {
@@ -261,8 +260,8 @@ void SC2Map::processPlacedObject( ObjectMode objMode, TiXmlElement* object )
 
     // an object may have more than one type of footprint,
     // all of which will be applied
-    FootToApply fta;
-
+      FootToApply fta;
+ 
     string type( "destruct" );
     fta.loc.mSet( mx, my );
     fta.rot = rot;
@@ -307,7 +306,9 @@ void SC2Map::processPlacedObject( ObjectMode objMode, TiXmlElement* object )
       return;
     }
 
-    if( strcmp( strType, "MineralField" ) == 0 )
+    if( strcmp( strType, "MineralField" ) == 0 ||
+		strcmp( strType, "PurifierMineralField") == 0 ||
+		strcmp( strType, "PurifierMineralField750") == 0 )
     {
       Resource* r = new Resource;
       r->loc.mSet( mx, my );
@@ -323,7 +324,9 @@ void SC2Map::processPlacedObject( ObjectMode objMode, TiXmlElement* object )
       return;
     }
 
-    if( strcmp( strType, poRichMineralField ) == 0 )
+    if( strcmp( strType, poRichMineralField ) == 0 ||
+		strcmp(strType, "PurifierRichMineralField" ) == 0 ||
+		strcmp(strType, "PurifierRichMineralField750" ) == 0 )
     {
       Resource* r = new Resource;
       r->loc.mSet( mx, my );
@@ -341,7 +344,8 @@ void SC2Map::processPlacedObject( ObjectMode objMode, TiXmlElement* object )
 
     if( strcmp( strType, "VespeneGeyser"        ) == 0 ||
         strcmp( strType, "SpacePlatformGeyser"  ) == 0 ||
-        strcmp( strType, "ProtossVespeneGeyser" ) == 0 )
+		strcmp( strType, "ProtossVespeneGeyser") == 0 ||
+		strcmp( strType, "PurifierVespeneGeyser") == 0 )
     {
       Resource* r = new Resource;
       r->loc.mSet( mx, my );
@@ -372,6 +376,8 @@ void SC2Map::processPlacedObject( ObjectMode objMode, TiXmlElement* object )
       resources.push_back( r );
       return;
     }
+
+	OutputDebugString(strType);
   }
 }
 

@@ -275,6 +275,9 @@ float SC2Map::getShortestPathDistance( Node* u, Node* v, PathType t )
     return 0.0f;
   }
 
+  // manhattan
+  return abs(u->loc.mcx - v->loc.mcx) + abs(u->loc.mcy - v->loc.mcy);
+
   if( !(u->pathsFromThisSrcCalculated) )
   {
     computeShortestPaths( u, t );
@@ -302,6 +305,13 @@ Node* SC2Map::getShortestPathPredecessor( Node* u, Node* v, PathType t )
     computeShortestPaths( u, t );
     u->pathsFromThisSrcCalculated = true;
   }
+
+  if (pi[t].find(u->id) == pi[t].end())
+  {
+	  // path info not found
+	  return NULL;
+  }
+
   return (*(pi[t][u->id]))[v->id];
 }
 
