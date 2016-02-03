@@ -10,7 +10,7 @@ void Colour::ToRGB(unsigned long a_colour, float& a_r, float& a_g, float& a_b)
 }
 
 
-void Colour::ToARGB(unsigned long a_colour, Uint8& a_a, Uint8& a_r, Uint8& a_g, Uint8& a_b)
+void Colour::ToARGB(unsigned long a_colour, unsigned char& a_a, unsigned char& a_r, unsigned char& a_g, unsigned char& a_b)
 {
 	a_a = ( a_colour >> 24 ) & 0xff;
 	a_r = ( a_colour >> 16 ) & 0xff;
@@ -23,7 +23,8 @@ DWORD Colour::ColorToDword(Color* a_color, int a)
 {
     if (a_color == 0) return 0xffaaaaaa;
     
-    return DWORD_ARGB(a, (int)(255 * a_color->r), (int)(255 * a_color->g), (int)(255 * a_color->b));
+    //return DWORD_ARGB(a, (int)(255 * a_color->r), (int)(255 * a_color->g), (int)(255 * a_color->b));
+	return DWORD_ARGB(a, (int)(255 * a_color->b), (int)(255 * a_color->g), (int)(255 * a_color->r));
 }
 
 // r,g,b values are from 0 to 1
@@ -112,6 +113,25 @@ void Colour::toHSV(DWORD a_colour, float* h, float* s, float* v)
 }
 
 
+DWORD Colour::RGBBlend(DWORD a_colour1, DWORD a_colour2, double a_blend)
+{
+	float r1, g1, b1;
+	float r2, g2, b2;
+	ToRGB(a_colour1, r1, g1, b1);
+	ToRGB(a_colour2, r2, g2, b2);
+
+	float rb = a_blend * r2 + (1.f - a_blend) * r1;
+	float gb = a_blend * g2 + (1.f - a_blend) * g1;
+	float bb = a_blend * b2 + (1.f - a_blend) * b1;
+	
+	int ir = ((int)(255.f * rb));
+	int ig = ((int)(255.f * gb));
+	int ib = ((int)(255.f * bb));
+
+	return DWORD_ARGB(0xff, ir, ig, ib);
+}
+
+
 DWORD Colour::HSVBlend(DWORD a_colour1, DWORD a_colour2, double a_blend)
 {
     float h1 = 0;
@@ -127,9 +147,11 @@ DWORD Colour::HSVBlend(DWORD a_colour1, DWORD a_colour2, double a_blend)
     toHSV(a_colour1, &h1, &s1, &v1);
     toHSV(a_colour2, &h2, &s2, &v2);
     
-    float hb = a_blend * h1 + (1.f - a_blend) * h2;
-    float sb = a_blend * s1 + (1.f - a_blend) * s2;
-    float vb = a_blend * v1 + (1.f - a_blend) * v2;
+    float hb = (abs(h1 - h2) < abs(fmod(h1 + h2, 255.f))) ?
+		a_blend * h2 + (1.f - a_blend) * h1 :
+		a_blend * h2 + (1.f - a_blend) * h1;
+    float sb = a_blend * s2 + (1.f - a_blend) * s1;
+    float vb = a_blend * v2 + (1.f - a_blend) * v1;
     
     HSVtoRGB(&rb, &gb, &bb, hb, sb, vb);
     

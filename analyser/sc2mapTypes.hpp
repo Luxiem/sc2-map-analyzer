@@ -10,7 +10,19 @@ using namespace std;
 #include "coordinates.hpp"
 #include "utility.hpp"
 
-
+enum FootprintTypes
+{
+	FP_NOBUILD = 1 << 0,
+	FP_LOSB = 1 << 1,
+	FP_DESTRUCT = 1 << 2,
+	FP_UNIT = 1 << 3,
+	FP_RESOURCE = 1 << 4,
+	FP_NOBUILDMAIN = 1 << 5,
+	FP_COLLAPSIBLE_SOURCE = 1 << 6,
+	FP_COLLAPSIBLE_TARGET = 1 << 7,
+	FP_DOODAD = 1 << 8
+};
+const int FootprintTypesSize = 8;
 
 typedef char  s8;
 typedef short s16;

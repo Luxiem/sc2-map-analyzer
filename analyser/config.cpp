@@ -52,7 +52,7 @@ Config::~Config()
     delete *itr;
   }
 
-  for( map< string, map<string, Footprint*>* >::iterator itr = type2name2foot.begin();
+  for( map< int, map<string, Footprint*>* >::iterator itr = type2name2foot.begin();
        itr != type2name2foot.end();
        ++itr )
   {
@@ -339,6 +339,15 @@ enum readFootprintMode
 };
 
 
+map<string, Footprint*>* getInnerMap(Config* config, int fp_type)
+{
+	if (config->type2name2foot.find(fp_type) == config->type2name2foot.end())
+		return NULL;
+
+	return config->type2name2foot[fp_type];
+}
+
+
 void readFootprintConfig( string* path, Config* c )
 {
   string configFilename( *path );
@@ -514,11 +523,11 @@ void readFootprintConfig( string* path, Config* c )
           }
 
 
-          map<string, Footprint*>* units_name2foot = c->type2name2foot["unit"];
+		  map<string, Footprint*>* units_name2foot = getInnerMap(c, FP_UNIT);//  c->type2name2foot["unit"];
           if( units_name2foot == NULL )
           {
             units_name2foot = new map<string, Footprint*>();
-            c->type2name2foot["unit"] = units_name2foot;
+            c->type2name2foot[FP_UNIT] = units_name2foot;
           }
 
           for( list<string>::iterator uItr = units.begin();
@@ -529,11 +538,11 @@ void readFootprintConfig( string* path, Config* c )
           }
 
 
-          map<string, Footprint*>* doodads_name2foot = c->type2name2foot["doodad"];
+          map<string, Footprint*>* doodads_name2foot = getInnerMap(c, FP_DOODAD);
           if( doodads_name2foot == NULL )
           {
             doodads_name2foot = new map<string, Footprint*>();
-            c->type2name2foot["doodad"] = doodads_name2foot;
+            c->type2name2foot[FP_DOODAD] = doodads_name2foot;
           }
 
           for( list<string>::iterator dItr = doodads.begin();
@@ -544,11 +553,11 @@ void readFootprintConfig( string* path, Config* c )
           }
 
 
-          map<string, Footprint*>* destructs_name2foot = c->type2name2foot["destruct"];
+          map<string, Footprint*>* destructs_name2foot = getInnerMap(c, FP_DESTRUCT);
           if( destructs_name2foot == NULL )
           {
             destructs_name2foot = new map<string, Footprint*>();
-            c->type2name2foot["destruct"] = destructs_name2foot;
+            c->type2name2foot[FP_DESTRUCT] = destructs_name2foot;
           }
 
           for( list<string>::iterator dItr = destructs.begin();
@@ -559,11 +568,11 @@ void readFootprintConfig( string* path, Config* c )
           }
 
 
-          map<string, Footprint*>* collapsible_source_name2foot = c->type2name2foot["collapsible_source"];
+          map<string, Footprint*>* collapsible_source_name2foot = getInnerMap(c, FP_COLLAPSIBLE_SOURCE);
           if( collapsible_source_name2foot == NULL )
           {
             collapsible_source_name2foot = new map<string, Footprint*>();
-            c->type2name2foot["collapsible_source"] = collapsible_source_name2foot;
+            c->type2name2foot[FP_COLLAPSIBLE_SOURCE] = collapsible_source_name2foot;
           }
 
           for( list<string>::iterator dItr = collapsible_sources.begin();
@@ -574,11 +583,11 @@ void readFootprintConfig( string* path, Config* c )
           }
 
 
-          map<string, Footprint*>* collapsible_target_name2foot = c->type2name2foot["collapsible_target"];
+          map<string, Footprint*>* collapsible_target_name2foot = getInnerMap(c, FP_COLLAPSIBLE_TARGET);
           if( collapsible_target_name2foot == NULL )
           {
             collapsible_target_name2foot = new map<string, Footprint*>();
-            c->type2name2foot["collapsible_target"] = collapsible_target_name2foot;
+            c->type2name2foot[FP_COLLAPSIBLE_TARGET] = collapsible_target_name2foot;
           }
 
           for( list<string>::iterator dItr = collapsible_targets.begin();
@@ -589,11 +598,11 @@ void readFootprintConfig( string* path, Config* c )
           }
 
 
-          map<string, Footprint*>* resources_name2foot = c->type2name2foot["resource"];
+		  map<string, Footprint*>* resources_name2foot = getInnerMap(c, FP_RESOURCE);
           if( resources_name2foot == NULL )
           {
             resources_name2foot = new map<string, Footprint*>();
-            c->type2name2foot["resource"] = resources_name2foot;
+            c->type2name2foot[FP_RESOURCE] = resources_name2foot;
           }
 
           for( list<string>::iterator dItr = resources.begin();
@@ -604,11 +613,11 @@ void readFootprintConfig( string* path, Config* c )
           }
 
 
-          map<string, Footprint*>* nobuildmains_name2foot = c->type2name2foot["nobuildmain"];
+          map<string, Footprint*>* nobuildmains_name2foot = getInnerMap(c, FP_NOBUILDMAIN);
           if( nobuildmains_name2foot == NULL )
           {
             nobuildmains_name2foot = new map<string, Footprint*>();
-            c->type2name2foot["nobuildmain"] = nobuildmains_name2foot;
+            c->type2name2foot[FP_NOBUILDMAIN] = nobuildmains_name2foot;
           }
 
           for( list<string>::iterator dItr = nobuildmains.begin();
@@ -619,11 +628,11 @@ void readFootprintConfig( string* path, Config* c )
           }
 
 
-          map<string, Footprint*>* nobuilds_name2foot = c->type2name2foot["nobuild"];
+          map<string, Footprint*>* nobuilds_name2foot = getInnerMap(c, FP_NOBUILD);
           if( nobuilds_name2foot == NULL )
           {
             nobuilds_name2foot = new map<string, Footprint*>();
-            c->type2name2foot["nobuild"] = nobuilds_name2foot;
+            c->type2name2foot[FP_NOBUILD] = nobuilds_name2foot;
           }
 
           for( list<string>::iterator dItr = nobuilds.begin();
@@ -634,11 +643,11 @@ void readFootprintConfig( string* path, Config* c )
           }
 
 
-          map<string, Footprint*>* losbs_name2foot = c->type2name2foot["losb"];
+          map<string, Footprint*>* losbs_name2foot = getInnerMap(c, FP_LOSB);
           if( losbs_name2foot == NULL )
           {
             losbs_name2foot = new map<string, Footprint*>();
-            c->type2name2foot["losb"] = losbs_name2foot;
+            c->type2name2foot[FP_LOSB] = losbs_name2foot;
           }
 
           for( list<string>::iterator dItr = losbs.begin();

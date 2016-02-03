@@ -6,22 +6,17 @@
 
 
 // Map Analyser version
-#define VALG 1.99
+#define VALG 2.0
 
 
 #include <string>
 
-#ifdef _WINDOWS
-#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
-// Windows Header Files:
-#include <windows.h>
-#endif
 
 // Model - Sc2Map instance
 // View - OpenGL context
 // Controller - UV, MainWindow
 class View;
-class Controller;
+class SettingsMap;
 class SC2Map;
 
 
@@ -29,76 +24,73 @@ class SC2Map;
 class Common
 {
 public:
-	
-  // Init with path to data files
-	static void Init(std::string a_path);
 
-  // Load and analyse map
-  // TODO Add callback function
-  // TODO threaded
-	static void beginLoadMap(std::string a_fileName);
+  Common();
+  ~Common();
+  
+  // Init with path to config files
+  void Init(std::string a_path);
 
-#ifdef _WINDOWS
-	static HWND getHwnd();
-#endif
-    
-  // TODO Not used ???
-  // Save a PNG image of the current analysis
-	static void SaveImage(std::string a_fileName);
-
-    static bool Quit();
+  // Ready to exit the application?
+  bool Quit();
     
   // Draw a frame of UI and Map View
-	static void DrawScreen();
-	
-  // TODO
-  // UI Controller
-  static void SetPath(int a_pathSpawnA, int a_pathBaseA, int a_pathSpawnB, int a_pathBaseB);
+  void DrawScreen();
 
-  // User input
-	static void OnLeftMouseDown(int a_x, int a_y);
-	static void OnLeftMouseUp(int a_x, int a_y);
-	static void OnMouseMove(int a_x, int a_y);
-	static void OnScrollWheel(int a_delta);
+public:
+	static void Log(const char* a_msg);
+	static void SetQuit();
+	static void beginLoadMap(const char* a_fileName);
+	static void SaveImage(const char* a_fileName);
 
-  // Window size
-  static void OnClientAreaChanged(int a_x, int a_y);
-
-  // Check if map co-ordinate is pathable
-  static bool IsPathable(int i, int j, int t);
-
-  //
-  static void ReloadConfig();
-
-  //
-  static void Log(const char* a_msg);
+protected:
+ 
+  std::string common_log;
     
-    //
-    static View* GetView() { return s_view; }
-    
-    static std::string getPath();
-		
+  void Log_impl(const char* a_msg);
+
+  void SetQuit_impl() { m_quit = true;  }
+
+  // Load and analyse map
+  void beginLoadMap_impl(std::string a_fileName);
+
+  // Save a PNG image of the current analysis
+  void SaveImage_impl(std::string a_fileName);
+
+private:
+
+	// Legacy
+	void SetPath(int a_pathSpawnA, int a_pathBaseA, int a_pathSpawnB, int a_pathBaseB);
+
+	// Check if map co-ordinate is pathable
+	bool IsPathable(int i, int j, int t);
+
+	// Refresh config data from files
+	void ReloadConfig(std::string a_path);
+
 protected:
 	
-	// Core objects
-	static SC2Map* s_sc2map;
-  static Controller* s_controller;
-  static View* s_view;
+  // Core objects
+  SC2Map* s_sc2map;
+  SettingsMap* s_controller;
+  View* s_view;
 
   // Siege map helpers
   // TODO - roll into analyser algorithms
   typedef void (*PlotFunc)(int, int);
-	static void DDA(int x1, int y1, int x2, int y2, PlotFunc Plot);
-	static int siege_processBlock;
-	static bool siege_processUncover;
-	static void PlotSiege(int a_x, int a_y);
-	static int siege_processBlock2;
-	static void PlotSiege2(int a_x, int a_y);
-	static float isSiegeable(int a_x, int a_y, int a_innerRadius, int a_radius);
+  void DDA(int x1, int y1, int x2, int y2, PlotFunc Plot);
+  int siege_processBlock;
+  bool siege_processUncover;
+  void PlotSiege(int a_x, int a_y);
+  int siege_processBlock2;
+  void PlotSiege2(int a_x, int a_y);
+  float isSiegeable(int a_x, int a_y, int a_innerRadius, int a_radius);
+
+  bool m_quit;
 
 public:
-	static void GenerateSiegeMap(int a_type);
-  static float* siegeMap;
-  static int s_genPathType;
+  void GenerateSiegeMap(int a_type);
+  float* siegeMap;
+  int s_genPathType;
 
 };

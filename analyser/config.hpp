@@ -34,7 +34,7 @@ struct Config
 
   // unit/doodad/etc. -> name -> footprint
   list<Footprint*> allFootprints;
-  map< string, map<string, Footprint*>* > type2name2foot;
+  map< int, map<string, Footprint*>* > type2name2foot;
 };
 
 
@@ -46,6 +46,7 @@ void createInternalConfig( Config* c );
 
 bool getGlobalOutputOption( string option );
 
+map<string, Footprint*>* getInnerMap(Config* config, int fp_type);
 
 extern Config configInternal;
 extern Config configUserGlobal;

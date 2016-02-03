@@ -19,11 +19,15 @@ using namespace std;
 
 
 
+
+
 struct FootToApply
 {
   point  loc;
   float  rot;
-  string type;
+  //string type;
+  int type;
+
   string name;
 };
 
@@ -207,22 +211,13 @@ void SC2Map::processPlacedObject( ObjectMode objMode, TiXmlElement* object )
     // otherwise find appropriate footprint
     const char* strType = object->Attribute( attType );
 
-    string type( "doodad" );
     string name( strType );
 
     FootToApply fta;
     fta.loc.mSet( mx, my );
     fta.rot = rot;
-    fta.type.assign( type );
+	fta.type = FP_DOODAD | FP_NOBUILD | FP_LOSB;
     fta.name.assign( name );
-    footsToApply.push_back( fta );
-
-    type.assign( "nobuild" );
-    fta.type.assign( type );
-    footsToApply.push_back( fta );
-
-    type.assign( "losb" );
-    fta.type.assign( type );
     footsToApply.push_back( fta );
 
     return;
@@ -262,41 +257,13 @@ void SC2Map::processPlacedObject( ObjectMode objMode, TiXmlElement* object )
     // all of which will be applied
       FootToApply fta;
  
-    string type( "destruct" );
     fta.loc.mSet( mx, my );
     fta.rot = rot;
-    fta.type.assign( type );
+	fta.type = FP_DESTRUCT | FP_UNIT | FP_RESOURCE | FP_NOBUILDMAIN |
+		FP_NOBUILD | FP_LOSB | FP_COLLAPSIBLE_SOURCE | FP_COLLAPSIBLE_TARGET;
     fta.name.assign( name );
     footsToApply.push_back( fta );
 
-    type.assign( "unit" );
-    fta.type.assign( type );
-    footsToApply.push_back( fta );
-
-    type.assign( "resource" );
-    fta.type.assign( type );
-    footsToApply.push_back( fta );
-
-    type.assign( "nobuildmain" );
-    fta.type.assign( type );
-    footsToApply.push_back( fta );
-
-    type.assign( "nobuild" );
-    fta.type.assign( type );
-    footsToApply.push_back( fta );
-    
-    type.assign( "losb" );
-    fta.type.assign( type );
-    footsToApply.push_back( fta );
-
-    type.assign( "collapsible_source" );
-    fta.type.assign( type );
-    footsToApply.push_back( fta );
-
-    type.assign( "collapsible_target" );
-    fta.type.assign( type );
-    footsToApply.push_back( fta );
-    
     if( strcmp( strType, poWatchtower ) == 0 )
     {
       Watchtower* wt = new Watchtower;
@@ -408,14 +375,31 @@ void SC2Map::applyFillsAndFootprints()
   }
   pathingFills.clear();
 
+  list<string> unfoundFootprints;
   for( list<FootToApply>::iterator itr = footsToApply.begin();
        itr != footsToApply.end();
        ++itr )
   {
     FootToApply* fta = &(*itr);
-    applyFootprint( &(fta->loc), fta->rot, &(fta->type), &(fta->name) );
+    bool footError = applyFootprint( &(fta->loc), fta->rot, fta->type, &(fta->name) );
+	if (footError)
+	{
+		if (find(unfoundFootprints.begin(), unfoundFootprints.end(), fta->name) == unfoundFootprints.end())
+			unfoundFootprints.push_back(fta->name);
+	}
   }
   footsToApply.clear();
+
+  if (unfoundFootprints.size())
+  {
+	  printError("%i missing footprints:", unfoundFootprints.size());
+	  for (list<string>::iterator itr = unfoundFootprints.begin();
+			itr != unfoundFootprints.end();
+			 ++itr)
+	  {
+		  printError("-   %s", (*itr).c_str());
+	  }
+  }
 }
 
 
@@ -501,189 +485,217 @@ void SC2Map::propagateFill( int dx, int dy, point* c, map<int, point>* fillSet, 
 }
 
 
-
-
-
-void SC2Map::applyFootprint( point* c, float rot, string* type, string* name )
+Footprint* SC2Map::findFootprint( float rot, string* name, int fp_type)
 {
-  Footprint* foot = NULL;
+	Footprint* foot = NULL;
+	map<string, Footprint*>* innerMap;
+	string specificRot(*name);
 
-  map<string, Footprint*>* innerMap;
+	if (rot > 45.01f && rot <= 135.01f) {
+		specificRot.append(footprintRot270cw);
 
-  // if there is a footprint for the specific
-  // rotation, use that, otherwise default to
-  // the one footprint
-  string specificRot( *name );
-  int offX = 0;
-  int offY = 0;
-  if ( *type == "collapsible_source" || *type == "collapsible_target" )
-  {
-    if ( *type == "collapsible_target" )
-    {
-      if (rot > 44.f && rot < 46.f)
-      {
-        offX = 4;
-        offY = 4;
-      }
-      else if (rot > 134.f && rot < 136.f)
-      {
-        offX = -4;
-        offY = 4;
-      }
-      if (rot > 224.f && rot < 226.f)
-      {
-        offX = -4;
-        offY = -4;
-      }
-      else if (rot > 314.f && rot < 316.f)
-      {
-        offX = 4;
-        offY = -4;
-      }
-    }
-  }
-  else
-  {
-    if( rot > 45.01f && rot <= 135.01f ) {
-      specificRot.append( footprintRot270cw );
+	}
+	else if (rot > 135.01f && rot <= 225.01f) {
+		specificRot.append(footprintRot180cw);
 
-    } else if( rot > 135.01f && rot <= 225.01f ) {
-      specificRot.append( footprintRot180cw );
+	}
+	else if (rot > 225.01f && rot <= 315.01f) {
+		specificRot.append(footprintRot90cw);
+	}
 
-    } else if( rot > 225.01f && rot <= 315.01f ) {
-      specificRot.append( footprintRot90cw );
-    }
-  }
+	// first check local user config
+	innerMap = getInnerMap(&configUserLocal, fp_type);
+	if (innerMap != NULL)
+	{
+		foot = (*innerMap)[specificRot];
+
+		if (foot == NULL) {
+			foot = (*innerMap)[*name];
+		}
+	}
+
+	// if nothing there, check global
+	if (foot == NULL)
+	{
+		innerMap = getInnerMap(&configUserGlobal, fp_type);
+		if (innerMap != NULL)
+		{
+			foot = (*innerMap)[specificRot];
+
+			if (foot == NULL) {
+				foot = (*innerMap)[*name];
+			}
+		}
+	}
+
+	// note: there are NO FOOTPRINTS in the global internal
+	// config, so if we don't have one by now, just quit
+	//if (foot == NULL)
+	//{
+	//	if (find(missingFootprints.begin(), missingFootprints.end(), *name) == missingFootprints.end())
+	//	{
+	//		missingFootprints.push_back(*name);
+	//		printError("\"%s\" not found in footprints.", name->data());
+	//	}
+	//}
+	
+	return foot;
+}
 
 
-  // first check local user config
-  innerMap = configUserLocal.type2name2foot[*type];
-  if( innerMap != NULL )
-  {
-    foot = (*innerMap)[specificRot];
 
-    if( foot == NULL ) {
-      foot = (*innerMap)[*name];
-    }
-  }
+bool SC2Map::applyFootprint( point* c, float rot, int type, string* name )
+{
+	bool placement = false;
 
-  // if nothing there, check global
-  if( foot == NULL )
-  {
-    innerMap = configUserGlobal.type2name2foot[*type];
-    if( innerMap != NULL )
-    {
-      foot = (*innerMap)[specificRot];
+	for (int i = 0; i < FootprintTypesSize; ++i) // HACK
+	{
+		FootprintTypes fp_type = (FootprintTypes)(1 << i);
 
-      if( foot == NULL ) {
-        foot = (*innerMap)[*name];
-      }
-    }
-  }
+		if (type & fp_type)
+		{
+			Footprint* foot = findFootprint(rot, name, fp_type);
+			if (foot == NULL) continue;
 
-  // note: there are NO FOOTPRINTS in the global internal
-  // config, so if we don't have one by now, just quit
-  if( foot == NULL )
-  {
-    printError( "\"%s\" not found in footprints.", name->data() );
-    return;// false;
-  }
+			placement = true;
 
-  for( list<int>::iterator itr = foot->relativeCoordinates.begin();
-       itr != foot->relativeCoordinates.end();
-       ++itr )
-  {
-    int dx = *itr;
+			// if there is a footprint for the specific
+			// rotation, use that, otherwise default to
+			// the one footprint
+			string specificRot(*name);
+			int offX = 0;
+			int offY = 0;
+			if (fp_type == FP_COLLAPSIBLE_SOURCE || fp_type == FP_COLLAPSIBLE_SOURCE)
+			{
+				if (fp_type == FP_COLLAPSIBLE_SOURCE)
+				{
+					if (rot > 44.f && rot < 46.f)
+					{
+						offX = 4;
+						offY = 4;
+					}
+					else if (rot > 134.f && rot < 136.f)
+					{
+						offX = -4;
+						offY = 4;
+					}
+					if (rot > 224.f && rot < 226.f)
+					{
+						offX = -4;
+						offY = -4;
+					}
+					else if (rot > 314.f && rot < 316.f)
+					{
+						offX = 4;
+						offY = -4;
+					}
+				}
+			}
 
-    // there should be an even number of coordinates!
-    ++itr;
-    if( itr == foot->relativeCoordinates.end() )
-    {
-      printError( "Odd number of coordinates for footprint %s %s.\n",
-                  type->data(),
-                  name->data() );
-      exit( -1 );
-    }
 
-    int dy = *itr;
+			for (list<int>::iterator itr = foot->relativeCoordinates.begin();
+			itr != foot->relativeCoordinates.end();
+				++itr)
+			{
+				int dx = *itr;
 
-    point dc;
-    //dc.pcSet( c->pcx + dx, c->pcy + dy );
-    dc.mSet( c->mx + dx + offX + 0.25f, c->my + dy + offY + 0.25f );
+				// there should be an even number of coordinates!
+				++itr;
+				if (itr == foot->relativeCoordinates.end())
+				{
+					//printError( "Odd number of coordinates for footprint %s %s.\n",
+					//            type->data(),
+					//            name->data() );
+					exit(-1);
+				}
 
-    if( !isPlayableCell( &dc ) )
-    {
-      continue;
-    }
+				int dy = *itr;
 
-    if( *type == "doodad" || *type == "unit" ) {
-      // remove all pathing
-      setPathing( &dc, PATH_GROUND_NOROCKS,               false );
-      setPathing( &dc, PATH_GROUND_WITHROCKS,             false );
-      setPathing( &dc, PATH_CWALK_NOROCKS,                false );
-      setPathing( &dc, PATH_CWALK_WITHROCKS,              false );
-      setPathing( &dc, PATH_GROUND_WITHROCKS_NORESOURCES, false );
-      setPathing( &dc, PATH_BUILDABLE,                    false );
-      setPathing( &dc, PATH_BUILDABLE_MAIN,               false );
+				point dc;
+				dc.mSet(c->mx + dx + offX + 0.25f, c->my + dy + offY + 0.25f);
 
-    } else if( *type == "destruct" ) {
-      // remove from WITHROCKS pathing types
-      setPathing( &dc, PATH_GROUND_WITHROCKS,             false );
-      setPathing( &dc, PATH_CWALK_WITHROCKS,              false );
-      setPathing( &dc, PATH_GROUND_WITHROCKS_NORESOURCES, false );
-      Destruct* destruct = new Destruct;
-      destruct->loc.set( &dc );
-      destructs.push_back( destruct );
+				if (!isPlayableCell(&dc))
+				{
+					continue;
+				}
 
-    } else if( *type == "collapsible_source" ) {
-      // remove from WITHROCKS pathing types
-      setPathing( &dc, PATH_GROUND_WITHROCKS,             false );
-      setPathing( &dc, PATH_CWALK_WITHROCKS,              false );
-      setPathing( &dc, PATH_GROUND_WITHROCKS_NORESOURCES, false );
-      Collapsible* collapsible = new Collapsible;
-      collapsible->loc.set( &dc );
-      collapsible->state = true;
-      collapsibles.push_back( collapsible );
+				if (fp_type == FP_DOODAD || fp_type == FP_UNIT) {
+					// remove all pathing
+					setPathing(&dc, PATH_GROUND_NOROCKS, false);
+					setPathing(&dc, PATH_GROUND_WITHROCKS, false);
+					setPathing(&dc, PATH_CWALK_NOROCKS, false);
+					setPathing(&dc, PATH_CWALK_WITHROCKS, false);
+					setPathing(&dc, PATH_GROUND_WITHROCKS_NORESOURCES, false);
+					setPathing(&dc, PATH_BUILDABLE, false);
+					setPathing(&dc, PATH_BUILDABLE_MAIN, false);
 
-    } else if( *type == "collapsible_target" ) {
-      // 
-      setPathing( &dc, PATH_BUILDABLE,                    false );
-      setPathing( &dc, PATH_BUILDABLE_MAIN,               false );
-      Collapsible* collapsible = new Collapsible;
-      collapsible->loc.set( &dc );
-      collapsible->state = false;
-      collapsibles.push_back( collapsible );
+				}
+				else if (fp_type == FP_DESTRUCT) {
+					// remove from WITHROCKS pathing types
+					setPathing(&dc, PATH_GROUND_WITHROCKS, false);
+					setPathing(&dc, PATH_CWALK_WITHROCKS, false);
+					setPathing(&dc, PATH_GROUND_WITHROCKS_NORESOURCES, false);
+					Destruct* destruct = new Destruct;
+					destruct->loc.set(&dc);
+					destructs.push_back(destruct);
 
-    } else if( *type == "resource" ) {
-      // remove all pathing except WITHOUTRESOURCES
-      setPathing( &dc, PATH_GROUND_NOROCKS,               false );
-      setPathing( &dc, PATH_GROUND_WITHROCKS,             false );
-      setPathing( &dc, PATH_CWALK_NOROCKS,                false );
-      setPathing( &dc, PATH_CWALK_WITHROCKS,              false );
-      setPathing( &dc, PATH_BUILDABLE,                    false );
-      setPathing( &dc, PATH_BUILDABLE_MAIN,               false );
+				}
+				else if (fp_type == FP_COLLAPSIBLE_SOURCE) {
+					// remove from WITHROCKS pathing types
+					setPathing(&dc, PATH_GROUND_WITHROCKS, false);
+					setPathing(&dc, PATH_CWALK_WITHROCKS, false);
+					setPathing(&dc, PATH_GROUND_WITHROCKS_NORESOURCES, false);
+					Collapsible* collapsible = new Collapsible;
+					collapsible->loc.set(&dc);
+					collapsible->state = true;
+					collapsibles.push_back(collapsible);
 
-    } else if( *type == "nobuildmain" ) {
-      setPathing( &dc, PATH_BUILDABLE_MAIN,               false );
+				}
+				else if (fp_type == FP_COLLAPSIBLE_TARGET) {
+					// 
+					setPathing(&dc, PATH_BUILDABLE, false);
+					setPathing(&dc, PATH_BUILDABLE_MAIN, false);
+					Collapsible* collapsible = new Collapsible;
+					collapsible->loc.set(&dc);
+					collapsible->state = false;
+					collapsibles.push_back(collapsible);
 
-    } else if( *type == "nobuild" ) {
-      setPathing( &dc, PATH_BUILDABLE,                    false );
-      setPathing( &dc, PATH_BUILDABLE_MAIN,               false );
+				}
+				else if (fp_type == FP_RESOURCE) {
+					// remove all pathing except WITHOUTRESOURCES
+					setPathing(&dc, PATH_GROUND_NOROCKS, false);
+					setPathing(&dc, PATH_GROUND_WITHROCKS, false);
+					setPathing(&dc, PATH_CWALK_NOROCKS, false);
+					setPathing(&dc, PATH_CWALK_WITHROCKS, false);
+					setPathing(&dc, PATH_BUILDABLE, false);
+					setPathing(&dc, PATH_BUILDABLE_MAIN, false);
 
-    } else if( *type == "losb" ) {
-      setPathing( &dc, PATH_BUILDABLE,                    false );
-      setPathing( &dc, PATH_BUILDABLE_MAIN,               false );
-      LoSB* losb = new LoSB;
-      losb->loc.set( &dc );
-      losbs.push_back( losb );
+				}
+				else if (fp_type ==  FP_NOBUILDMAIN) {
+					setPathing(&dc, PATH_BUILDABLE_MAIN, false);
 
-    } else {
-      printError( "Placed object %s has unknown type %s.",
-                  name->data(),
-                  type->data() );
-      exit( -1 );
-    }
-  }
+				}
+				else if (fp_type == FP_NOBUILD) {
+					setPathing(&dc, PATH_BUILDABLE, false);
+					setPathing(&dc, PATH_BUILDABLE_MAIN, false);
 
-  return;// true;
+				}
+				else if (fp_type == FP_LOSB) {
+					setPathing(&dc, PATH_BUILDABLE, false);
+					setPathing(&dc, PATH_BUILDABLE_MAIN, false);
+					LoSB* losb = new LoSB;
+					losb->loc.set(&dc);
+					losbs.push_back(losb);
+				}
+				else {
+					printError("Placed object %s has unknown type %i.",
+						name->data(),
+						type);
+					exit(-1);
+				}
+			}
+		}
+	}
+
+  return placement;
 }

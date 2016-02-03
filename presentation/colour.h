@@ -6,7 +6,6 @@
 // Some definitions
 #include <StormPort.h>
 #endif
-#include <SDL.h>
 #include "sc2mapTypes.hpp"
 
 
@@ -23,7 +22,7 @@ public:
 
     static void ToRGB(unsigned long a_colour, float& a_r, float& a_g, float& a_b);
 
-    static void ToARGB(unsigned long a_colour, Uint8& a_a, Uint8& a_r, Uint8& a_g, Uint8& a_b);
+    static void ToARGB(unsigned long a_colour, unsigned char& a_a, unsigned char& a_r, unsigned char& a_g, unsigned char& a_b);
 
 
     static DWORD ColorToDword(Color* a_color, int a = 0xff);
@@ -34,7 +33,8 @@ public:
     static void RGBtoHSV( float r, float g, float b, float *h, float *s, float *v );
     static void HSVtoRGB( float *r, float *g, float *b, float h, float s, float v );
     static void toHSV(DWORD a_colour, float* h, float* s, float* v);
-    static DWORD HSVBlend(DWORD a_colour1, DWORD a_colour2, double a_blend);
+    static DWORD RGBBlend(DWORD a_colour1, DWORD a_colour2, double a_blend);
+	static DWORD HSVBlend(DWORD a_colour1, DWORD a_colour2, double a_blend);
 
 };
 

@@ -1,19 +1,10 @@
 #include "Common.h"
-
-// Model
 #include "SC2Map.hpp"
-
-// View
 #include "View.h"
-
-// Controller
 #include "Controller.h"
-
-// ?
 #include <stdio.h>
 #include <math.h>
-
-#include <SDL.h>
+#include <colour.h>
 
 
 #if defined(WIN32) || defined(_WIN32) 
@@ -29,66 +20,57 @@
 void SaveImageFile();
 
 
-//
-// Static Common definitions
-//
-SC2Map* Common::s_sc2map = 0;
-Controller* Common::s_controller = 0;
-View* Common::s_view = 0;
-
-float* Common::siegeMap = 0;
-int Common::siege_processBlock = 0;
-bool Common::siege_processUncover = 0;
-int Common::s_genPathType = 0;
-int Common::siege_processBlock2 = 0;
+static Common* s_instance = NULL;
 
 
-void Common::ReloadConfig()
+Common::Common()
 {
-  std::string toolPath = ".";
-	readConfigFiles( false, NULL, &configInternal );
-	readConfigFiles( true, &toolPath, &configUserGlobal );
+	s_sc2map = 0;
+	s_controller = 0;
+	s_view = 0;
+
+	siegeMap = 0;
+	siege_processBlock = 0;
+	siege_processUncover = 0;
+	s_genPathType = 0;
+	siege_processBlock2 = 0;
+
+	m_quit = false;
+
+	s_instance = this;
 }
 
 
-static std::string s_path;
-std::string Common::getPath() { return s_path; }
+Common::~Common()
+{
+
+}
+
+
+void Common::ReloadConfig(std::string a_path)
+{
+  std::string toolPath = a_path;
+  readConfigFiles( false, NULL, &configInternal );
+  readConfigFiles( true, &toolPath, &configUserGlobal );
+}
 
 
 void Common::Init(std::string a_path)
 {
-    s_path = a_path;
-    
-	// Config reading
-	std::string toolPath = a_path;
-	initConfigReading();
-	readConfigFiles( false, NULL, &configInternal );
-	readConfigFiles( true, &toolPath, &configUserGlobal );
+  // Config reading
+  std::string toolPath = a_path;
+  initConfigReading();
+  readConfigFiles( false, NULL, &configInternal );
+  readConfigFiles( true, &toolPath, &configUserGlobal );
 
   // Objects
-  s_controller = new Controller();
+  s_controller = NewSettingsMap();
   s_view = new View();
-
-  s_controller->Init();
-  s_view->Init(s_controller);
-
-  s_controller->m_core->SetFontManager(&s_view->g_fm);
-  s_controller->m_core->SetRectManager(&s_view->g_rm);
-
+  s_view->Init(s_controller, &common_log, &beginLoadMap, &Log, &SetQuit);
 }
 
 
-#ifdef _WINDOWS
-HWND Common::getHwnd()
-{
-	if (s_view) return s_view->getHwnd();
-
-	return 0;
-}
-#endif
-
-
-void Common::beginLoadMap(std::string a_fileName)
+void Common::beginLoadMap_impl(std::string a_fileName)
 {
 	string ext1( ".s2ma" );
 	string ext2( ".SC2Map" );
@@ -137,14 +119,17 @@ void Common::beginLoadMap(std::string a_fileName)
 	s_sc2map->locateChokes();
 	s_sc2map->analyzeBases();
 	  
-	// TODO - View
-	//int bufferWidth = s_sc2map->txDimPlayable * 4 + 32;
-	//int bufferHeight = s_sc2map->tyDimPlayable * 4 + 240;
-
     // Apply loaded map to view
     s_view->SetMap(s_sc2map);
 
-    s_controller->OnMapLoaded(s_sc2map);
+    // Colours from SC2Map files to settings
+	s_controller->colour_default = Colour::ColorToDword(s_sc2map->getColor("default"));
+	
+	DWORD oplo1 = Colour::ColorToDword(s_sc2map->getColor("oplo1"));
+	DWORD oplo2 = Colour::ColorToDword(s_sc2map->getColor("oplo2"));
+	DWORD oplo3 = Colour::ColorToDword(s_sc2map->getColor("oplo3"));
+
+	s_controller->colours_openness = { oplo1, oplo2, oplo3 };
 }
 
 
@@ -262,7 +247,7 @@ float Common::isSiegeable(int a_x, int a_y, int a_innerRadius, int a_radius)
 			siege_processUncover = false;
 			
 			// Draw line between points
-			DDA(a_x, a_y, x, y, &PlotSiege);
+			//DDA(a_x, a_y, x, y, &PlotSiege);
 			
 			// Check results
 			if (siege_processUncover)
@@ -279,7 +264,7 @@ float Common::isSiegeable(int a_x, int a_y, int a_innerRadius, int a_radius)
 						if (x + ii < 0 || x + ii >= s_sc2map->cxDimPlayable) continue;
 						if (y + jj < 0 || y + jj >= s_sc2map->cyDimPlayable) continue;
 						siege_processBlock2 = 0;
-						DDA(a_x + ii, a_y + jj, x + ii, y + jj, &PlotSiege2);
+			//			DDA(a_x + ii, a_y + jj, x + ii, y + jj, &PlotSiege2);
 						if (siege_processBlock2 == 0) clear = true;
 					}
 				}
@@ -319,7 +304,7 @@ void Common::GenerateSiegeMap(int a_type)
 }
 
 
-void Common::SaveImage(std::string a_fileName)
+void Common::SaveImage_impl(std::string a_fileName)
 {
 	if (a_fileName.size() <= 4 || a_fileName.substr(a_fileName.size() - 4, 4) != std::string(".png"))
 	{
@@ -330,96 +315,12 @@ void Common::SaveImage(std::string a_fileName)
 }
 
 
-static bool quit = false;
-
-
-bool Common::Quit() { return quit; }
+bool Common::Quit() { return m_quit; }
 
 
 void Common::DrawScreen()
 {
-    if (s_controller->NeedsUpdate())
-    {
-        s_view->NeedsUpdate();
-        s_controller->Updated();
-    }
-    
-    s_view->DrawScreen();
-    
-    // Process events
-    SDL_Event e;
-
-    while (SDL_PollEvent(&e))
-    {
-        //If user closes the window
-        if (e.type == SDL_QUIT)
-            quit = true;
-        
-        //If user presses any key
-        else if (e.type == SDL_KEYDOWN)
-        {
-        }
-        //If user clicks the mouse
-        else if (e.type == SDL_MOUSEBUTTONDOWN)
-        {
-            if (e.button.button == 1)
-                OnLeftMouseDown(e.button.x, e.button.y);
-        }
-        else if (e.type == SDL_MOUSEBUTTONUP)
-        {
-            if (e.button.button == 1)
-                OnLeftMouseUp(e.button.x, e.button.y);
-        }
-        else if (e.type == SDL_MOUSEMOTION)
-        {
-            OnMouseMove(e.motion.x, e.motion.y);
-        }
-        else if (e.type == SDL_WINDOWEVENT)
-        {
-            if (e.window.event == SDL_WINDOWEVENT_RESIZED)
-            {
-				OnClientAreaChanged(e.window.data1, e.window.data2);
-            }
-        }
-        else if (e.type == SDL_DROPFILE)
-        {
-            beginLoadMap(e.drop.file);
-            SDL_free(e.drop.file);
-        }
-    }
-    
-    SDL_Delay(33);
-}
-
-
-void Common::OnLeftMouseDown(int a_x, int a_y) 
-{ 
-  s_controller->m_core->OnLeftMouseDown(a_x, a_y); 
-}
-
-
-void Common::OnLeftMouseUp(int a_x, int a_y)
-{ 
-  s_controller->m_core->OnLeftMouseUp(a_x, a_y); 
-}
-
-
-void Common::OnMouseMove(int a_x, int a_y) 
-{ 
-  s_controller->m_core->OnMouseMove(a_x, a_y); 
-}
-
-
-void Common::OnScrollWheel(int a_delta) 
-{ 
-  s_controller->m_core->OnScrollWheel(a_delta); 
-}
-
-
-void Common::OnClientAreaChanged(int a_x, int a_y)
-{ 
-  s_view->OnClientAreaChanged(a_x, a_y);
-  s_controller->OnWindowSizeChanged(a_x, a_y); 
+	s_view->DrawScreen();
 }
 
 
@@ -433,15 +334,22 @@ bool Common::IsPathable(int i, int j, int t)
 {
   if (s_sc2map == 0 || s_sc2map->mapPathing == 0) return false;
   if (t >= NUM_PATH_TYPES) return false;
-	if (i < 0) return false;
-	if (i >= s_sc2map->cxDimPlayable) return false;
-	if (j < 0) return false;
-	if (j >= s_sc2map->cyDimPlayable) return false;
-	return s_sc2map->mapPathing[NUM_PATH_TYPES * (j * s_sc2map->cxDimPlayable + i) + t];
+  if (i < 0) return false;
+  if (i >= s_sc2map->cxDimPlayable) return false;
+  if (j < 0) return false;
+  if (j >= s_sc2map->cyDimPlayable) return false;
+  return s_sc2map->mapPathing[NUM_PATH_TYPES * (j * s_sc2map->cxDimPlayable + i) + t];
 }
 
 
-void Common::Log(const char* a_msg)
+void Common::Log_impl(const char* a_msg)
 {
-  s_controller->Log(a_msg);
+	common_log.append(a_msg);
+	common_log.append("\n");
 }
+
+
+void Common::Log(const char* a_msg) { s_instance->Log_impl(a_msg); }
+void Common::SetQuit() { s_instance->SetQuit_impl(); }
+void Common::beginLoadMap(const char* a_fileName) { s_instance->beginLoadMap_impl(a_fileName); }
+void Common::SaveImage(const char* a_fileName) { s_instance->SaveImage_impl(a_fileName); }

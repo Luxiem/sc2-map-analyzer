@@ -315,7 +315,7 @@ void SC2Map::locateChokes()
         exit( -1 );
       }
 
-      Node* v = getShortestPathPredecessor( src, u, pathTypeLocateChokes );
+	  Node* v = getShortestPathPredecessor(src, u, pathTypeLocateChokes);
       if( v == NULL )
       {
         // no path, just skip this pairing

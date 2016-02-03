@@ -261,8 +261,9 @@ public:
                       map<int, point>* fillSet,
                       map<int, point>* workSet );
 
-  void applyFootprint( point* c, float rot, string* type, string* name );
-
+  Footprint* findFootprint( float rot, string* name, int fp_type );
+  bool applyFootprint( point* c, float rot, int type, string* name );
+  //list<string> missingFootprints;
 
 
 

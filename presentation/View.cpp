@@ -1,80 +1,116 @@
 #include "View.h"
 #include "Controller.h"
+#include "Common.h"
+#include <colour.h>
 #include "SC2Map.hpp"
-#include "UV/UV.h"
-#include <SDL.h>
-//#include "FBORenderTexture.h"
-#include "Common.h" // siege path stuff
 #include <sstream>
-#include "SDL_image.h"
-#include "colour.h"
-#include <SDL_syswm.h> // HWND
+#include <stdio.h>
+#include <imgui.h>
+#include "imgui_impl_glfw.h"
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
 
-// Naughty
-#ifdef _WINDOWS
-#define snprintf _snprintf
-#endif
+//static ImVec4 clear_color = ImColor(114, 144, 154);
+static ImVec4 clear_color = ImColor(114, 114, 114);
 
 
 View::View()
 {
   m_sc2map = 0;
-  m_controller = 0;
+  settings = 0;
 
-  m_bufferWidth = 256;
-  m_bufferHeight = 256;
-  m_windowWidth = 256;
-  m_windowHeight = 256;
+  m_bufferWidth = 0;
+  m_bufferHeight = 0;
 
   m_dG = 0.f;
   m_dC = 0.f;
   m_dA = 0.f;
 
-    m_targetSurf = 0;
-    m_targetTex = 0;
-    
-    m_window = 0;
-    m_renderer = 0;
-    
-    m_updateMap = true;
+  m_updateMap = false;
+
+  m_frameBuffer = 0;
+  m_renderTexture = 0;
+
+  m_pathSelectA = 0;
+  m_pathSelectB = 0;
+  m_pathSelectC = 0;
+  m_pathSelectD = 0;
+
+  m_beginLoadMap = 0;
+  m_logMessage = 0;
+  m_setQuit = 0;
 }
 
 
 View::~View()
 {
   releaseBuffer();
-    
-    SDL_DestroyRenderer(m_renderer);
-    SDL_DestroyWindow(m_window);
-    SDL_Quit();
+
+  // Cleanup
+  ImGui_ImplGlfw_Shutdown();
+  glfwTerminate();
 }
 
 
+static void drop_callback(GLFWwindow* window, int count, const char** paths)
+{
+	if (count == 1) 
+		Common::beginLoadMap(paths[0]);
+}
 
-void View::Init(Controller* a_controller)
+
+static void error_callback(int error, const char* description)
+{
+	Common::Log(description);
+}
+
+
+void View::Init(SettingsMap* a_controller, std::string* a_log, CallbackString a_loadFn, CallbackString a_logFn, CallbackVoid a_quitFn)
 {    
-    SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
-
   //
-  m_controller = a_controller;
-    
-    if (SDL_Init(SDL_INIT_VIDEO) != 0)
-    {
-        exit(0);
-    }
-    
-    SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+  settings = a_controller;
+  m_beginLoadMap = a_loadFn;
+  m_logMessage = a_logFn;
+  m_setQuit = a_quitFn;
 
-    m_window = SDL_CreateWindow("SC2MA", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_RESIZABLE);
-    
-    m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+  // Initialise GLFW
+  glfwSetErrorCallback(error_callback);
+  if (!glfwInit())
+	  return;
 
+  // Create window
+  m_glwindow = glfwCreateWindow(1280, 720, "SC2MA", NULL, NULL);
+  glfwMakeContextCurrent(m_glwindow);
 
-    g_fm.Init(m_renderer, Common::getPath());
-    
-    Common::OnClientAreaChanged(640, 480);
-    
+  // Setup ImGui binding
+  ImGui_ImplGlfw_Init(m_glwindow, true);
+
+  // Drag-drop callback
+  glfwSetDropCallback(m_glwindow, drop_callback);
+
+  // ..?
+  ImGuiIO& io = ImGui::GetIO();
+  //io.ImeWindowHandle = window;
+
+  unsigned char* pixels;
+  int width, height, bytes_per_pixels;
+  io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height, &bytes_per_pixels);
+
+  // After context creation, can initialise GLEW
+  if (glewInit() != GLEW_OK)
+  {
+	  /* Problem: glewInit failed, something is seriously wrong. */
+	  //fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+  }
+  
+  // For FBO target
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  // Initialise Font Manager 
+  m_fm.Init(".");
+
 }
 
 
@@ -86,132 +122,279 @@ void View::Done()
 
 void View::releaseBuffer()
 {
-	if (m_targetTex)
-    {
-        SDL_DestroyTexture(m_targetTex);
-        m_targetTex = 0;
-    }
+	if (m_frameBuffer)
+	{
+		glDeleteFramebuffers(1, &m_frameBuffer);
+		m_frameBuffer = 0;
+	}
+
+	if (m_renderTexture)
+	{
+		glDeleteTextures(1, &m_renderTexture);
+		m_renderTexture = 0;
+	}
+
 }
 
 
 void View::createBuffer()
 {
 	releaseBuffer();
-   
-    m_targetTex = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, m_bufferWidth, m_bufferHeight);
+
+	glEnable(GL_TEXTURE_2D);
+
+	glGenFramebuffers(1, &m_frameBuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_frameBuffer);
+
+	glGenTextures(1, &m_renderTexture);
+
+	glBindTexture(GL_TEXTURE_2D, m_renderTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_bufferWidth, m_bufferHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_renderTexture, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// Set the list of draw buffers.
+	GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+
+	//if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	//	return false;
+
+
+}
+
+
+/// A fairly straight forward function that pushes
+/// a projection matrix that will make object world 
+/// coordinates identical to window coordinates.
+void View::pushScreenCoordinateMatrix()
+{
+	glPushAttrib(GL_TRANSFORM_BIT);
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(0, m_bufferWidth, 0, m_bufferHeight);
+	glPopAttrib();
+}
+
+
+/// Pops the projection matrix without changing the current
+/// MatrixMode.
+void View::popScreenCoordinateMatrix()
+{
+	glPushAttrib(GL_TRANSFORM_BIT);
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glPopAttrib();
 }
 
 
 void View::DrawScreen()
 {
-	// Draw screen
-    SDL_SetRenderDrawColor(m_renderer, 0xa0, 0xa0, 0xa0, 0xff);
-    SDL_RenderClear(m_renderer);
-    
-	// Render Frame Map
-    if (m_sc2map && m_updateMap)
-	{	
-        if (m_targetTex == 0)
-        {
-            createBuffer();
-        }
-
-		// Set Render Target and Draw Map
-        SDL_SetRenderTarget(m_renderer, m_targetTex);
-        SDL_SetRenderDrawColor(m_renderer, 0x00, 0x00, 0x00, 0xff);
-        SDL_RenderClear(m_renderer);
-
-        if (m_controller)
-            m_controller->m_core->OnClientAreaChanged(m_bufferWidth, m_bufferHeight);
-    	
-        DrawMap();
-        
-        SDL_SetRenderTarget(m_renderer, NULL);
-        
-        m_updateMap = false;
-    }
-	
-	if (m_controller)
-        m_controller->m_core->OnClientAreaChanged(m_windowWidth, m_windowHeight);
-    
-	SDL_RenderSetLogicalSize(m_renderer, m_windowWidth, m_windowHeight);
-    
-    SDL_Rect rect;
-    rect.x = 0;
-    rect.y = 0;
-    rect.h = m_windowHeight;
-    rect.w = m_windowWidth;
-    SDL_RenderSetViewport(m_renderer, &rect);
-    
-    if (!m_sc2map)
-    {
-        g_fm.Draw(276 + 24, 32, 1, "Drag and drop SC2Map file here");
-    }
-
-	// Display Target as texture
-	if (m_targetTex)
+	// Check the window
+	if (glfwWindowShouldClose(m_glwindow))
 	{
-        int x = (m_windowWidth - m_bufferWidth - 270) / 2 + 270;
-        int y = (m_windowHeight - m_bufferHeight) / 2;
-
-        SDL_Rect dest = {(int)x, (int)y, m_bufferWidth, m_bufferHeight};
-        SDL_RenderCopy(m_renderer, m_targetTex, 0, &dest);
+		Common::SetQuit();
+		return;
 	}
 
-	// Background UI
-	UV::Declaration2 decl2;
-	
-	decl2.Rect.left = 0;
-	decl2.Rect.right = 270;
-	decl2.Rect.top = 0;
-	decl2.Rect.bottom = m_windowHeight;
-	decl2.Color0 = 0xff8a8a8a;
-	decl2.Color1 = 0xff8a8a8a;
-	decl2.Color2 = 0xff8a8a8a;
-	decl2.Color3 = 0xff8a8a8a;
-	g_rm.Draw(decl2);	
-	
-	decl2.Rect.left = 270;
-	decl2.Rect.right = 276;
-	decl2.Rect.top = 0;
-	decl2.Rect.bottom = m_windowHeight;
-	decl2.Color0 = 0xff555555;
-	decl2.Color1 = 0xff555555;
-	decl2.Color2 = 0xff555555;
-	decl2.Color3 = 0xff555555;
-	g_rm.Draw(decl2);
-    
-	decl2.Rect.left = 271;
-	decl2.Rect.right = 275;
-	decl2.Rect.top = 0;
-	decl2.Rect.bottom = m_windowHeight;
-	decl2.Color0 = 0xfffafafa;
-	decl2.Color1 = 0xfffafafa;
-	decl2.Color2 = 0xffaaaaaa;
-	decl2.Color3 = 0xffaaaaaa;
-	g_rm.Draw(decl2);
-	
-	// UV Core
-    if (m_controller)
-        m_controller->m_core->OnPaint();
+	// useful
+	int windowWidth, windowHeight;
+	glfwGetFramebufferSize(m_glwindow, &windowWidth, &windowHeight);
 
-    SDL_RenderPresent(m_renderer);
+
+	glfwPollEvents();
+
+	// Map BG...
+
+	if (m_frameBuffer == 0) 
+		createBuffer();
+
+	if (m_frameBuffer)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, m_frameBuffer);
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+		{
+			float r, g, b;
+			Colour::ToRGB(settings->colour_background, r, g, b);
+
+			glViewport(0, 0, m_bufferWidth, m_bufferHeight);
+			glClearColor(b, g, r, 1.0);
+			glClear(GL_COLOR_BUFFER_BIT);
+
+			pushScreenCoordinateMatrix();
+			
+			m_rm.OnResize(m_bufferWidth, m_bufferHeight);
+			DrawMap();
+
+			popScreenCoordinateMatrix();
+		}
+	}
+	
+	// Calculate IM...
+	ImGui_ImplGlfw_NewFrame();
+
+	// 1. Show a simple window
+	// Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
+	ImGui::Begin("Settings", 0, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+	ImGui::SetWindowPos(ImVec2(8, 8));
+
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+
+	if (m_sc2map)
+	{
+		std::string basesString;
+		for (list<StartLoc*>::iterator i = m_sc2map->startLocs.begin(); i != m_sc2map->startLocs.end(); ++i)
+		{
+			basesString = basesString + std::string((*i)->name);
+			basesString.push_back('\0');
+		}
+
+		if (ImGui::CollapsingHeader("Map Layers", 0, true, true))
+		{
+			ImGui::Checkbox("Bases", &settings->layer_bases);
+			ImGui::Checkbox("Buildable", &settings->layer_buildable);
+			ImGui::Checkbox("Destructable", &settings->layer_destructable);
+			ImGui::Checkbox("Gas balance", &settings->layer_gas_balance);
+			ImGui::Checkbox("Height", &settings->layer_height);
+			ImGui::Checkbox("Influence", &settings->layer_influence);
+			if (settings->layer_influence)
+			{
+				ImGui::Combo("Base influence", &settings->spawn_influence, basesString.c_str());
+			}
+			ImGui::Checkbox("Line-of-sight blockers", &settings->layer_los_blockers);
+			ImGui::Checkbox("Openness", &settings->layer_openness);
+			ImGui::Checkbox("Pathable", &settings->layer_pathable);
+			//ImGui::Checkbox("", settings->layer_pathing);
+			ImGui::Checkbox("Photon overcharge", &settings->layer_photon_overcharge);
+			//ImGui::Checkbox("", settings->layer_siegeable);
+			ImGui::Checkbox("Watchtowers", &settings->layer_watchtowers);
+		}
+
+		// Pathing section
+		if (ImGui::CollapsingHeader("Pathing") && m_sc2map)
+		{
+			ImGui::Checkbox("Show path", &settings->layer_pathing);
+
+			char* text_base = " Main \0 Nat \0 3rd \0";
+
+			// From:
+			bool A = ImGui::Combo("From", &m_pathSelectA, basesString.c_str());
+			bool B = ImGui::Combo("Base", &m_pathSelectB, text_base);
+			// To:
+			bool C = ImGui::Combo("To", &m_pathSelectC, basesString.c_str());
+			bool D = ImGui::Combo(" ", &m_pathSelectD, text_base);
+
+			if (A || B || C || D)
+			{
+				SetPath(m_pathSelectA, m_pathSelectB, m_pathSelectC, m_pathSelectD);
+			}
+		}
+
+		if (ImGui::CollapsingHeader("Colours"))
+		{
+
+			ImGui::ColorEdit3("Clear colour", (float*)&clear_color);
+			ImGui::ColorEdit3("Background colour", settings->colour_background);
+
+			ImGui::Text("Openness");
+			size_t n = settings->colours_openness.size();
+			for (int i = 0; i < n; ++i)
+			{
+				unsigned long t = settings->colours_openness[i];
+
+				char s[256];
+				sprintf(s, "%d.", i);
+				if (ImGui::ColorEdit3(s, t))
+					settings->colours_openness[i] = t;
+			}
+
+			if (ImGui::Button("- Remove openness colour"))
+			{
+				if (n > 0)
+					settings->colours_openness.pop_back();
+			}
+
+			if (ImGui::Button("+ Add openness colour"))
+			{
+				if (n == 0)
+					settings->colours_openness.push_back(settings->colour_default);
+				else
+					settings->colours_openness.push_back(settings->colours_openness[n - 1]);
+			}
+		}
+
+		if (ImGui::CollapsingHeader("Log", 0, true, true))
+		{
+			ImGui::TextWrapped(m_commonLog->c_str());
+		}
+	}
+	else
+	{
+		ImGui::Text("Drag and drop SC2MAP file here.");
+	}
+
+	ImGui::End();
+
+
+	// Rendering everything to window
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, windowWidth, windowHeight);
+	glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(0, windowWidth, 0, windowHeight);
+	glPopAttrib();
+
+
+	if (m_frameBuffer)
+	{
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, m_renderTexture);
+
+		glBegin(GL_QUADS);
+		glColor4f(1.0f, 1.0f, 1.0f, 1.f);
+
+		int x = (windowWidth - m_bufferWidth - 270) / 2 + 270;
+		int y = (windowHeight - m_bufferHeight) / 2;
+
+		glTexCoord2f(0.0f, 0.0f); glVertex3f(x, y, 1.0f);  // Bottom Left Of The Texture and Quad
+		glTexCoord2f(1.0f, 0.0f); glVertex3f(x + m_bufferWidth, y, 1.0f);  // Bottom Right Of The Texture and Quad
+		glTexCoord2f(1.0f, 1.0f); glVertex3f(x + m_bufferWidth, y + m_bufferHeight, 1.0f);  // Top Right Of The Texture and Quad
+		glTexCoord2f(0.0f, 1.0f); glVertex3f(x, y + m_bufferHeight, 1.0f);  // Top Left Of The Texture and Quad
+
+		glEnd();
+		glDisable(GL_TEXTURE_2D);
+	}
+
+	ImGui::Render();
+		
+	glfwSwapBuffers(m_glwindow);
+
+	glFlush();
 }
 
 
 void View::DrawMap()
 {
 	if (m_sc2map == 0) return;
-	
+
 	// Title
-	g_fm.Draw(24, 34, 1, m_sc2map->mapName.c_str());
-	
+	m_fm.DrawCenter(0.5 * m_bufferWidth, m_bufferHeight - 40, 1, m_sc2map->mapName.c_str());
+
 	// Legend
 	char sp[128];
 	std::string a, b;
 	int x1 = 24;
 	int x2 = 144;
-	int y1 = 60;
+	int y1 = m_bufferHeight - 60;
 	
 	// Playable area
 	a = std::string("Playable area");
@@ -221,18 +404,18 @@ void View::DrawMap()
 	snprintf(sp, 128, "%d", m_sc2map->cyDimPlayable);
 	b += std::string(sp);
 	
-	g_fm.Draw(x1, y1, 2, a.c_str());
-	g_fm.Draw(x2, y1, 2, b.c_str());
-	y1 += 20;
+	m_fm.Draw(x1, y1, 2, a.c_str());
+	m_fm.Draw(x2, y1, 2, b.c_str());
+	y1 += -20;
 	
 	// # Bases
 	a = std::string("Bases identified");
 	snprintf(sp, 128, "%d", (int)m_sc2map->bases.size());
 	b = std::string(sp);
 	
-	g_fm.Draw(x1, y1, 2, a.c_str());
-	g_fm.Draw(x2, y1, 2, b.c_str());
-	y1 += 20;	
+	m_fm.Draw(x1, y1, 2, a.c_str());
+	m_fm.Draw(x2, y1, 2, b.c_str());
+	y1 += -20;	
 	
 	// Total resources
 	a = std::string("Total resources");
@@ -243,33 +426,37 @@ void View::DrawMap()
 	b += std::string(sp) +
 	std::string(" G   ");
 	
-	g_fm.Draw(x1, y1, 2, a.c_str());
-	g_fm.Draw(x2, y1, 2, b.c_str());
-	y1 += 20;	
+	m_fm.Draw(x1, y1, 2, a.c_str());
+	m_fm.Draw(x2, y1, 2, b.c_str());
+	y1 += -20;	
 	
 	// Footer
-    a = std::string("SC Map Analyser for HotS, algorithms ");
+    a = std::string("SC Map Analyser for LotV, algorithms ");
     a += std::string(QUOTEMACRO(VALG));
-    g_fm.Draw(x1, m_bufferHeight - 20, 2, a.c_str());
+    m_fm.DrawCenter(0.5 * m_bufferWidth, 20, 2, a.c_str());
 	
+
+
 	// Map grids:
-	
+
+
+		
 	// Openness
 	unsigned long colour = 0;
-	UV::Declaration2 drawRect;
+	Declaration2 drawRect;
 	for (int i = 0; i < m_sc2map->cxDimPlayable; ++i)
 	{
 		for (int j = 0; j < m_sc2map->cyDimPlayable; ++j)
 		{ 
-			colour = Colour::ColorToDword(m_sc2map->getColor("default"));
-			
+			colour = settings->colour_default;
+
 			// Pathing
 			if (IsPathable(i, j, PATH_GROUND_WITHROCKS_NORESOURCES))
 			{
 				// Draw Quad
 				int hx = playableToImgX(i);
 				int hy = playableToImgY(j);
-				
+
 				drawRect.Color0 = colour;
 				drawRect.Color1 = colour;
 				drawRect.Color2 = colour;
@@ -278,11 +465,11 @@ void View::DrawMap()
 				drawRect.Rect.right = hx + 4;
 				drawRect.Rect.top = hy;
 				drawRect.Rect.bottom = hy + 4;
-				g_rm.Draw(drawRect);
+				m_rm.Draw(drawRect);
 			}
 			
 			// Openness
-            if (m_controller->ShowOpennessLayer())
+            if (settings->layer_openness)
 			{
 				//float openness = sc2map.GetOpenness(i, j, PATH_GROUND_NOROCKS) / 14.0;
 				float openness = m_sc2map->mapOpenness[NUM_PATH_TYPES*(j * m_sc2map->cxDimPlayable + i) + PATH_GROUND_NOROCKS];
@@ -291,64 +478,72 @@ void View::DrawMap()
 				
 				if (openness > 0)
 				{
-                    Color* color1 = 0;
-                    Color* color2 = 0;
-                    Color* color3 = 0;
                     DWORD blendedColour = 0;
 
-                    char h = m_sc2map->mapHeight[j * m_sc2map->txDimPlayable + i];
-                    switch (h)
-                    {
-                        case 1:
-                            color1 = m_sc2map->getColor("oplo1");
-                            color2 = m_sc2map->getColor("oplo2");
-                            color3 = m_sc2map->getColor("oplo3");
-                            break;
-                        case 2:
-                            color1 = m_sc2map->getColor("opmid1");
-                            color2 = m_sc2map->getColor("opmid2");
-                            color3 = m_sc2map->getColor("opmid3");
-                            break;
-                        case 3:
-                            color1 = m_sc2map->getColor("ophi1");
-                            color2 = m_sc2map->getColor("ophi2");
-                            color3 = m_sc2map->getColor("ophi3");
-                            break;
-                    }
-                    
-                    if (openness < 0.5f)
-                    {
-                        blendedColour = Colour::HSVBlend(Colour::ColorToDword(color1), Colour::ColorToDword(color2), 1.f - openness * 2.f);
-                    }
-                    else
-                    {
-                        blendedColour = Colour::HSVBlend(Colour::ColorToDword(color2), Colour::ColorToDword(color3), 1.f - (openness - 0.5f) * 2.f);
-                    }
+                    //char h = m_sc2map->mapHeight[j * m_sc2map->txDimPlayable + i];
+                    //switch (h)
+                    //{
+                    //    case 1:
+                    //        color1 = m_sc2map->getColor("oplo1");
+                    //        color2 = m_sc2map->getColor("oplo2");
+                    //        color3 = m_sc2map->getColor("oplo3");
+                    //        break;
+                    //    case 2:
+                    //        color1 = m_sc2map->getColor("opmid1");
+                    //        color2 = m_sc2map->getColor("opmid2");
+                    //        color3 = m_sc2map->getColor("opmid3");
+                    //        break;
+                    //    case 3:
+                    //        color1 = m_sc2map->getColor("ophi1");
+                    //        color2 = m_sc2map->getColor("ophi2");
+                    //        color3 = m_sc2map->getColor("ophi3");
+                    //        break;
+                    //}
 
-					// Draw Quad
-					int hx = playableToImgX(i);
-					int hy = playableToImgY(j);
-					
-					drawRect.Color0 = blendedColour;
-					drawRect.Color1 = blendedColour;
-					drawRect.Color2 = blendedColour;
-					drawRect.Color3 = blendedColour;
-					drawRect.Rect.left = hx;
-					drawRect.Rect.right = hx + 4;
-					drawRect.Rect.top = hy;
-					drawRect.Rect.bottom = hy + 4;
-					g_rm.Draw(drawRect);
+					int N = settings->colours_openness.size();
+					if (N >= 2)
+					{
+						int n = (int)(openness * (N-1));
+
+						if (n == N - 1)
+						{
+							blendedColour = settings->colours_openness[n];
+						}
+						else
+						{
+							DWORD color1 = settings->colours_openness[n];
+							DWORD color2 = settings->colours_openness[n + 1];
+
+							float a = (float)(n) / (float)(N - 1);
+
+							float t = (openness - a) * (N - 1);
+							
+							blendedColour = Colour::RGBBlend(color1, color2, t);
+						}
+
+						// Draw Quad
+						int hx = playableToImgX(i);
+						int hy = playableToImgY(j);
+
+						drawRect.Color0 = blendedColour;
+						drawRect.Color1 = blendedColour;
+						drawRect.Color2 = blendedColour;
+						drawRect.Color3 = blendedColour;
+						drawRect.Rect.left = hx;
+						drawRect.Rect.right = hx + 4;
+						drawRect.Rect.top = hy;
+						drawRect.Rect.bottom = hy + 4;
+						m_rm.Draw(drawRect);
+					}
 				}
 			}
             
             // Influence
-            if(m_controller->ShowInfluenceLayer())
+            if (settings->layer_influence)
             {
                 if (IsPathable(i, j, PATH_GROUND_WITHROCKS_NORESOURCES))
                 {
-                    
-                
-                    int s = m_controller->GetInfluenceSpawn();
+					int s = settings->spawn_influence;
                     
                     StartLoc* sl1 = 0;
                     for (std::list<StartLoc*>::iterator i = m_sc2map->startLocs.begin(); s >= 0; ++i)
@@ -379,14 +574,14 @@ void View::DrawMap()
                     drawRect.Rect.right = hx + 4;
                     drawRect.Rect.top = hy;
                     drawRect.Rect.bottom = hy + 4;
-                    g_rm.Draw(drawRect);
+                    m_rm.Draw(drawRect);
                 }
             }
 		}
 	}
 	
 	// Show LoS Blockers
-    if (m_controller->ShowLoS())
+    if (settings->layer_los_blockers)
 	{
 		for (list<LoSB*>::iterator i = m_sc2map->losbs.begin(); i != m_sc2map->losbs.end(); ++i)
 		{
@@ -404,59 +599,17 @@ void View::DrawMap()
 			drawRect.Rect.right = hx + 4;
 			drawRect.Rect.top = hy;
 			drawRect.Rect.bottom = hy + 4;
-			g_rm.Draw(drawRect);
+			m_rm.Draw(drawRect);
 		}
 	}
 	
 	// Show Siegable 
-    if (m_controller->SiegeMapType())
+    if (settings->layer_siegeable)
 	{
-		if (Common::s_genPathType != m_controller->SiegeMapType())
-			Common::GenerateSiegeMap(m_controller->SiegeMapType());
-		
-		if (Common::siegeMap == 0)
-			Common::GenerateSiegeMap(m_controller->SiegeMapType());
-		
-		for (int i = 0; i < m_sc2map->cxDimPlayable; ++i)
-		{
-			for (int j = 0; j < m_sc2map->cyDimPlayable; ++j)
-			{      
-				int r = 0, g = 0, b = 0;
-				float s = Common::siegeMap[i + j * m_sc2map->cxDimPlayable];
-				if (s)
-				{					
-					//float intensity = s;
-					//if (intensity > 1.f) intensity = 1.f; 
-					//if (intensity < 0.f) intensity = 0.f; 
-
-                    Color* siegeColor = m_sc2map->getColor("siege");
-					
-					r = 255 * (siegeColor ? siegeColor->r : 0);
-					g = 255 * (siegeColor ? siegeColor->g : 0);
-					b = 255 * (siegeColor ? siegeColor->b : 0);
-
-					colour = DWORD_ARGB((int)(255.0 * m_controller->GetAlpha3()), r, g, b);
-					
-					// Draw Quad
-					int hx = playableToImgX(i);
-					int hy = playableToImgY(j);
-					
-					drawRect.Color0 = colour;
-					drawRect.Color1 = colour;
-					drawRect.Color2 = colour;
-					drawRect.Color3 = colour;
-					drawRect.Rect.left = hx;
-					drawRect.Rect.right = hx + 4;
-					drawRect.Rect.top = hy;
-					drawRect.Rect.bottom = hy + 4;
-					g_rm.Draw(drawRect);
-				}        
-			}
-		}
 	}
 	
 	// Height
-    if (m_controller->ShowHeightLayer())
+    if (settings->layer_height)
 	{
 		char h = 0;
 		for (int i = 0; i < m_sc2map->cxDimPlayable; ++i)
@@ -467,15 +620,15 @@ void View::DrawMap()
 				
 				if (h == 1)
 				{
-					colour = Colour::ColorToDword(m_sc2map->getColor("terrainElev1"), (int)(255.f * m_controller->GetAlpha1()));
+					colour = Colour::ColorToDword(m_sc2map->getColor("terrainElev1"), (int)(255));
 				}
 				else if (h == 2)
 				{
-					colour = Colour::ColorToDword(m_sc2map->getColor("terrainElev2"), (int)(255.f * m_controller->GetAlpha1()));
+					colour = Colour::ColorToDword(m_sc2map->getColor("terrainElev2"), (int)(255));
 				}
 				else if (h == 3)
 				{
-					colour = Colour::ColorToDword(m_sc2map->getColor("terrainElev3"), (int)(255.f * m_controller->GetAlpha1()));
+					colour = Colour::ColorToDword(m_sc2map->getColor("terrainElev3"), (int)(255));
 				}
 				
 				if (IsPathable(i, j, PATH_GROUND_NOROCKS))
@@ -493,35 +646,35 @@ void View::DrawMap()
 					drawRect.Rect.right = hx + 2;
 					drawRect.Rect.top = hy;
 					drawRect.Rect.bottom = hy + 1;
-					g_rm.Draw(drawRect);
+					m_rm.Draw(drawRect);
 					
 					// Cross 2
 					drawRect.Rect.left = hx;
 					drawRect.Rect.right = hx + 1;
 					drawRect.Rect.top = hy;
 					drawRect.Rect.bottom = hy + 2;
-					g_rm.Draw(drawRect);
+					m_rm.Draw(drawRect);
 					
 					// Cross 3
 					drawRect.Rect.left = hx + 3;
 					drawRect.Rect.right = hx + 4;
 					drawRect.Rect.top = hy;
 					drawRect.Rect.bottom = hy + 1;
-					g_rm.Draw(drawRect);
+					m_rm.Draw(drawRect);
 					
 					// Cross 4
 					drawRect.Rect.left = hx;
 					drawRect.Rect.right = hx + 1;
 					drawRect.Rect.top = hy + 3;
 					drawRect.Rect.bottom = hy + 4;
-					g_rm.Draw(drawRect);
+					m_rm.Draw(drawRect);
 				}
 			}
 		}    
 	}	
 	
 	// Destruct
-    if (m_controller->ShowResourceLayer())
+    if (settings->layer_destructable)
 	{
         colour = Colour::ColorToDword(m_sc2map->getColor("destructable"));
 		for (list<Destruct*>::iterator i = m_sc2map->destructs.begin(); i != m_sc2map->destructs.end(); ++i)
@@ -535,7 +688,7 @@ void View::DrawMap()
 			drawRect.Color1 = colour;
 			drawRect.Color2 = colour;
 			drawRect.Color3 = colour;
-			g_rm.Draw(drawRect);
+			m_rm.Draw(drawRect);
 		}
 
         colour = Colour::ColorToDword(m_sc2map->getColor("collapsible"));
@@ -567,21 +720,21 @@ void View::DrawMap()
 			  drawRect.Color3 = 0xff50ff50;
             }
 			
-            g_rm.Draw(drawRect);
+            m_rm.Draw(drawRect);
 		}
 	}
 	
 	// Pathing
-    if (m_controller->ShowPathingLayer() && m_pathC.size())
+    if (settings->layer_pathing)
 	{
-        DWORD c1 = Colour::ColorToDword(m_sc2map->getColor("shortestPathAir"));
-        DWORD c2 = Colour::ColorToDword(m_sc2map->getColor("shortestPathGround"));
-        DWORD c3 = Colour::ColorToDword(m_sc2map->getColor("shortestPathCWalk"));
+		DWORD c1 = Colour::ColorToDword(m_sc2map->getColor("shortestPathAir"));
+		DWORD c2 = Colour::ColorToDword(m_sc2map->getColor("shortestPathGround"));
+		DWORD c3 = Colour::ColorToDword(m_sc2map->getColor("shortestPathCWalk"));
 		
-        //float d0 = 0.f;
-		g_rm.DrawPath(m_pathA, -2, c1);
-		g_rm.DrawPath(m_pathG, 0, c2);
-		g_rm.DrawPath(m_pathC, 2, c3);
+        float d0 = 0.f;
+		m_rm.DrawPath(m_pathA, -2, c1);
+		m_rm.DrawPath(m_pathG, 0, c2);
+		m_rm.DrawPath(m_pathC, 2, c3);
 
 		// Legend
 		std::string title = "";
@@ -627,8 +780,8 @@ void View::DrawMap()
     a += m_baseNameB;
 		title = a;
 		
-		g_fm.Draw(m_bufferWidth - 235, 34, 1, title.c_str());
-		
+		//g_fm.Draw(m_bufferWidth - 235, 34, 1, title.c_str());
+		/*
 		drawRect.Rect.left = m_bufferWidth - 233;
 		drawRect.Rect.right = drawRect.Rect.left + 12;
 		drawRect.Rect.top = 55;
@@ -657,30 +810,30 @@ void View::DrawMap()
 		drawRect.Color1 = c3;
 		drawRect.Color2 = c3;
 		drawRect.Color3 = c3;
-		g_rm.Draw(drawRect);
+		g_rm.Draw(drawRect);*/
 		
 		snprintf(sp, 128, "%.1f", m_dA);
 		title = std::string("Air: ") + std::string(sp);
 		snprintf(sp, 128, "%.1f", m_dA / OVERLORD_SPEED);
 		title += std::string(" (Overlord: ") + std::string(sp) + std::string("s)");
-		g_fm.Draw(m_bufferWidth - 215, 67, 2, title.c_str());
+		//g_fm.Draw(m_bufferWidth - 215, 67, 2, title.c_str());
 		
 		snprintf(sp, 128, "%.1f", m_dG);
 		title = std::string("Ground: ") + std::string(sp);
 		snprintf(sp, 128, "%.1f", m_dG / PROBE_SPEED);
 		title += std::string(" (Probe: ") + std::string(sp) + std::string("s)");
-		g_fm.Draw(m_bufferWidth - 215, 91, 2, title.c_str());
+		//g_fm.Draw(m_bufferWidth - 215, 91, 2, title.c_str());
 		
 		snprintf(sp, 128, "%.1f", m_dC);
 		title = std::string("Cliff: ") + std::string(sp);
 		snprintf(sp, 128, "%.1f", m_dC / REAPER_SPEED);
 		title += std::string(" (Reaper: ") + std::string(sp) + std::string("s)");
-		g_fm.Draw(m_bufferWidth - 215, 115, 2, title.c_str());
+		//g_fm.Draw(m_bufferWidth - 215, 115, 2, title.c_str());
 	}
 	
 	
 	// Bases + Resources
-    if (m_controller->ShowPhotonOvercharge())
+    if (settings->layer_photon_overcharge)
 	{
 		for (list<Base*>::iterator i = m_sc2map->bases.begin(); i != m_sc2map->bases.end(); ++i)
 		{
@@ -695,19 +848,18 @@ void View::DrawMap()
 				drawRect.Color2 = 0xffa4a4a4;
 				drawRect.Color3 = 0xffa4a4a4;
 				drawRect.Fill = true;
-				g_rm.Draw(drawRect);
+				m_rm.Draw(drawRect);
 				
 				drawRect.Color0 = 0xffffffff;
 				drawRect.Color1 = 0xffffffff;
 				drawRect.Color2 = 0xffffffff;
 				drawRect.Color3 = 0xffffffff;
 				drawRect.Fill = false;
-				g_rm.Draw(drawRect);
+				m_rm.Draw(drawRect);
 				
 				drawRect.Fill = true;
 				
-				g_rm.DrawCircle(
-								mapToImgX((*i)->loc.mtx - 1) - 2,
+				m_rm.DrawCircle(mapToImgX((*i)->loc.mtx - 1) - 2,
 								mapToImgY((*i)->loc.mty - 1) - 2, 
 								4.f * 13.f); // Photon Overcharge range
 			}
@@ -721,9 +873,9 @@ void View::DrawMap()
 				drawRect.Color1 = 0xffdda0a0;
 				drawRect.Color2 = 0xffdda0a0;
 				drawRect.Color3 = 0xffdda0a0;
-				g_rm.Draw(drawRect);
+				m_rm.Draw(drawRect);
 
-				g_rm.DrawCircle(
+				m_rm.DrawCircle(
 								mapToImgX((*i)->loc.mtx - 1) - 2,
 								mapToImgY((*i)->loc.mty - 1) - 2, 
 								4.f * 13.f); // Photon Overcharge range
@@ -737,7 +889,7 @@ void View::DrawMap()
     }
     
     // Geyser efficiency
-	if (m_controller->ShowVespeneEfficiency())
+	if (settings->layer_gas_balance)
     {
         int base_time = 1291;
         int dt = 0;
@@ -775,27 +927,24 @@ void View::DrawMap()
 				drawRect.Color1 = warningColour;
 				drawRect.Color2 = warningColour;
 				drawRect.Color3 = warningColour;
-				g_rm.Draw(drawRect);
-                
-                
+				m_rm.Draw(drawRect);
+                                
             }
         }
     }
 	
 	// Watchtower
-    if (m_controller->ShowWatchTower())
+    if (settings->layer_watchtowers)
 	{
-        SDL_SetRenderDrawColor(m_renderer, 0xff, 0xff, 0xff, 0xff);
-
 		for (list<Watchtower*>::iterator i = m_sc2map->watchtowers.begin(); i != m_sc2map->watchtowers.end(); ++i)
 		{
-			g_rm.DrawCircle(mapToImgX((*i)->loc.mtx - 1), mapToImgY((*i)->loc.mty), 4.f * (*i)->range); // sight range
+			m_rm.DrawCircle(mapToImgX((*i)->loc.mtx - 1), mapToImgY((*i)->loc.mty), 4.f * (*i)->range); // sight range
 			//g_rm.DrawCircle(mapToImgX((*i)->loc.mtx - 1), mapToImgY((*i)->loc.mty), 4.f * 2.5f); // activation range
 		}
 	}
 	
 	// Start Locations
-    if (m_controller->ShowBases())
+    if (settings->layer_bases)
 	{
 		for (list<StartLoc*>::iterator i = m_sc2map->startLocs.begin(); i != m_sc2map->startLocs.end(); ++i)
 		{
@@ -807,7 +956,7 @@ void View::DrawMap()
 				int basey = mapToImgY((*i)->mainBase->loc.mty);
 				
 				title = std::string("Main @ ") + std::string((*i)->name);
-				g_fm.Draw(basex - 26, basey + 12, 2, title.c_str());
+				m_fm.Draw(basex - 26, m_bufferHeight - basey - 12, 2, title.c_str());
 				/*
 				 snprintf(sp, 32, "%d", (*i)->spaceInMain);
 				 title = "space: " + std::string(sp);
@@ -825,7 +974,7 @@ void View::DrawMap()
 				title = "Natural";
 				int basex = mapToImgX((*i)->natBase->loc.mtx);
 				int basey = mapToImgY((*i)->natBase->loc.mty);
-				g_fm.Draw(basex - 26, basey + 12, 2, title.c_str());
+				m_fm.Draw(basex - 26, m_bufferHeight - basey - 12, 2, title.c_str());
 			}
 			
 			if ((*i)->thirdBase)
@@ -833,7 +982,7 @@ void View::DrawMap()
 				title = "Third";
 				int basex = mapToImgX((*i)->thirdBase->loc.mtx);
 				int basey = mapToImgY((*i)->thirdBase->loc.mty);
-				g_fm.Draw(basex - 26, basey + 12, 2, title.c_str());
+				m_fm.Draw(basex - 26, m_bufferHeight - basey - 12, 2, title.c_str());
 			}
 		}
 	} 
@@ -900,9 +1049,6 @@ int View::mapToImgY(int y)
 
 void View::OnClientAreaChanged(int a_width, int a_height)
 {
-	// set bounds
-	m_windowWidth = a_width;
-	m_windowHeight = a_height;
 }
 
 
@@ -1048,54 +1194,4 @@ float View::pathTo(point& p0, point& p1, PathType t, std::list<point>& path)
 
 void View::SaveImage(const char* a_fileName)
 {
-    int pitch = 32 * m_bufferWidth;
-    void* pixelData = malloc(pitch * m_bufferHeight);
-    void* pixelDataFlip = malloc(pitch * m_bufferHeight);
-    int bpp = 32;
-    Uint32 Rmask = 0, Gmask = 0, Bmask = 0, Amask = 0;
-    Uint32 format = SDL_PIXELFORMAT_ARGB8888; //m_targetTex->format;
-    
-    // HACK Paint map onto backbuffer (SDL is broken - https://bugzilla.libsdl.org/show_bug.cgi?id=2705)
-	SDL_SetRenderTarget(m_renderer, NULL);
-	SDL_Rect dest = {0, 0, m_bufferWidth, m_bufferHeight};
-    SDL_RenderCopy(m_renderer, m_targetTex, 0, &dest);
-	SDL_RenderPresent(m_renderer);
-
-	SDL_SetRenderTarget(m_renderer, m_targetTex);
-	int readResult = SDL_RenderReadPixels(m_renderer, NULL, SDL_PIXELFORMAT_ARGB8888, pixelData, pitch);
-	SDL_SetRenderTarget(m_renderer, NULL);
-
-    //SDL_SetRenderTarget(m_renderer, m_targetTex);
-    //int readResult = SDL_RenderReadPixels(m_renderer, NULL, SDL_PIXELFORMAT_ARGB8888, pixelData, pitch);
-    //SDL_SetRenderTarget(m_renderer, NULL);
-	
-    /*
-	for (int i = 0; i < m_bufferHeight; ++i)
-    {
-        memcpy((char*)pixelDataFlip + (m_bufferHeight - i - 1) * pitch, (char*)pixelData + i * pitch, pitch);
-    }
-	*/
-    
-    SDL_PixelFormatEnumToMasks(format, &bpp, &Rmask, &Gmask, &Bmask, &Amask);
-    
-    m_targetSurf = SDL_CreateRGBSurfaceFrom(pixelData, m_bufferWidth, m_bufferHeight, bpp, pitch, Rmask, Gmask, Bmask, Amask);
-    
-    int saveResult = IMG_SavePNG(m_targetSurf, a_fileName);
-    
-    SDL_FreeSurface(m_targetSurf);
-    m_targetSurf = 0;
-    
-    free(pixelData);
-    free(pixelDataFlip);
 }
-
-
-#ifdef _WINDOWS
-HWND View::getHwnd()
-{
-	struct SDL_SysWMinfo wmInfo;
-	SDL_VERSION(&wmInfo.version); 
-	SDL_GetWindowWMInfo(m_window, &wmInfo);
-	return wmInfo.info.win.window;
-}
-#endif
