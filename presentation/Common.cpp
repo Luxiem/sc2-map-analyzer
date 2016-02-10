@@ -12,13 +12,7 @@
 #else 
 #define PATH_SEPARATOR "/" 
 #endif 
-
-
-//
-// Declaration to be defined in main.cpp (platform specific)
-//
-void SaveImageFile();
-
+#define APP_DATA_FILE "local.dat"
 
 static Common* s_instance = NULL;
 
@@ -43,7 +37,15 @@ Common::Common()
 
 Common::~Common()
 {
+}
 
+
+void Common::Finalise()
+{
+	SerialToFile(s_controller, APP_DATA_FILE);
+
+	delete s_controller;
+	s_controller = NULL;
 }
 
 
@@ -65,8 +67,11 @@ void Common::Init(std::string a_path)
 
   // Objects
   s_controller = NewSettingsMap();
+  SerialFromFile(s_controller, APP_DATA_FILE);
+
   s_view = new View();
   s_view->Init(s_controller, &common_log, &beginLoadMap, &Log, &SetQuit);
+
 }
 
 

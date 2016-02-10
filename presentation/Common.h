@@ -31,7 +31,9 @@ public:
   // Init with path to config files
   void Init(std::string a_path);
 
-  // Ready to exit the application?
+  void Finalise();
+
+   // Ready to exit the application?
   bool Quit();
     
   // Draw a frame of UI and Map View

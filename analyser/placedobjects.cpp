@@ -381,8 +381,8 @@ void SC2Map::applyFillsAndFootprints()
        ++itr )
   {
     FootToApply* fta = &(*itr);
-    bool footError = applyFootprint( &(fta->loc), fta->rot, fta->type, &(fta->name) );
-	if (footError)
+    bool footPlaced = applyFootprint( &(fta->loc), fta->rot, fta->type, &(fta->name) );
+	if (footPlaced == false)
 	{
 		if (find(unfoundFootprints.begin(), unfoundFootprints.end(), fta->name) == unfoundFootprints.end())
 			unfoundFootprints.push_back(fta->name);
@@ -527,18 +527,7 @@ Footprint* SC2Map::findFootprint( float rot, string* name, int fp_type)
 			}
 		}
 	}
-
-	// note: there are NO FOOTPRINTS in the global internal
-	// config, so if we don't have one by now, just quit
-	//if (foot == NULL)
-	//{
-	//	if (find(missingFootprints.begin(), missingFootprints.end(), *name) == missingFootprints.end())
-	//	{
-	//		missingFootprints.push_back(*name);
-	//		printError("\"%s\" not found in footprints.", name->data());
-	//	}
-	//}
-	
+		
 	return foot;
 }
 
@@ -555,6 +544,7 @@ bool SC2Map::applyFootprint( point* c, float rot, int type, string* name )
 		if (type & fp_type)
 		{
 			Footprint* foot = findFootprint(rot, name, fp_type);
+			if (foot == NULL)  foot = findFootprint(0, name, fp_type);
 			if (foot == NULL) continue;
 
 			placement = true;

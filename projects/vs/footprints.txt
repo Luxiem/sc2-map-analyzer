@@ -34,11 +34,9 @@ doodad MonoTrackBend90_180__rot270cw
 
 
 resource MineralField
+resource MineralField750
 resource RichMineralField
-resource PurifierMineralField
-resource PurifierMineralField750
-resource PurifierRichMineralField
-resource PurifierRichMineralField750
+resource RichMineralField750
 resource HighYieldMineralField  # an old name
 {
   0, 0
@@ -49,7 +47,6 @@ resource VespeneGeyser
 resource RichVespeneGeyser
 resource SpacePlatformGeyser
 resource ProtossVespeneGeyser
-resource PurifierVespeneGeyser
 doodad   CharCrystalHuge
 {
 -1, -1
@@ -63,14 +60,11 @@ doodad   CharCrystalHuge
  1,  1
 }
 
-
 nobuildmain MineralField
+nobuildmain MineralField750
 nobuildmain RichMineralField
+nobuildmain RichMineralField750
 nobuildmain HighYieldMineralField  # an old name
-nobuildmain PurifierMineralField
-nobuildmain PurifierMineralField750
-nobuildmain PurifierRichMineralField
-nobuildmain PurifierRichMineralField750
 {
  -3, -3
  -2, -3
@@ -131,7 +125,6 @@ nobuildmain VespeneGeyser
 nobuildmain RichVespeneGeyser
 nobuildmain SpacePlatformGeyser
 nobuildmain ProtossVespeneGeyser
-nobuildmain PurifierVespeneGeyser
 {
   -3, -4
   -2, -4

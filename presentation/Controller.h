@@ -10,6 +10,8 @@ struct SettingsMap;
 
 // Create a new, initialised, settings map instance.
 SettingsMap* NewSettingsMap();
+bool SerialToFile(SettingsMap* a_settings, const char* a_filename);
+bool SerialFromFile(SettingsMap* a_settings, const char* a_filename);
 
 
 // Drawing settings for the SC2Map display

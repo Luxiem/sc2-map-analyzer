@@ -9,10 +9,26 @@
 #include "imgui_impl_glfw.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#ifdef  _WINDOWS
+#define GLFW_EXPOSE_NATIVE_WIN32
+#define GLFW_EXPOSE_NATIVE_WGL
+#include <GLFW/glfw3native.h>
+#endif
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 
 //static ImVec4 clear_color = ImColor(114, 144, 154);
 static ImVec4 clear_color = ImColor(114, 114, 114);
+
+
+//
+// Declaration to be defined in main.cpp (platform specific)
+//
+#ifdef _WINDOWS
+void LoadMapFile(HWND a_hwnd);
+void SaveImageFile(HWND a_hwnd);
+#endif
 
 
 View::View()
@@ -70,10 +86,11 @@ void View::Init(SettingsMap* a_controller, std::string* a_log, CallbackString a_
 {    
   //
   settings = a_controller;
+  m_commonLog = a_log;
   m_beginLoadMap = a_loadFn;
   m_logMessage = a_logFn;
   m_setQuit = a_quitFn;
-
+  
   // Initialise GLFW
   glfwSetErrorCallback(error_callback);
   if (!glfwInit())
@@ -105,6 +122,7 @@ void View::Init(SettingsMap* a_controller, std::string* a_log, CallbackString a_
   }
   
   // For FBO target
+  glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -153,17 +171,9 @@ void View::createBuffer()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_renderTexture, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_renderTexture, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
-
-	// Set the list of draw buffers.
-	GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-	glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
-
-	//if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	//	return false;
-
-
+	
 }
 
 
@@ -189,6 +199,15 @@ void View::popScreenCoordinateMatrix()
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glPopAttrib();
+}
+
+
+std::map<string, Footprint*>* getInnerMap_edit(Config* config, int fp_type)
+{
+	if (config->type2name2foot.find(fp_type) == config->type2name2foot.end())
+		return NULL;
+
+	return config->type2name2foot[fp_type];
 }
 
 
@@ -244,9 +263,20 @@ void View::DrawScreen()
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-
+	if (ImGui::Button("Open Map..."))
+	{
+#ifdef _WINDOWS
+		LoadMapFile(glfwGetWin32Window(m_glwindow));
+#endif
+	}
+	
 	if (m_sc2map)
 	{
+		if (ImGui::Button("Save Image..."))
+		{
+			SaveImageFile(glfwGetWin32Window(m_glwindow));
+		}
+
 		std::string basesString;
 		for (list<StartLoc*>::iterator i = m_sc2map->startLocs.begin(); i != m_sc2map->startLocs.end(); ++i)
 		{
@@ -331,6 +361,26 @@ void View::DrawScreen()
 		if (ImGui::CollapsingHeader("Log", 0, true, true))
 		{
 			ImGui::TextWrapped(m_commonLog->c_str());
+		}
+
+		if (ImGui::CollapsingHeader("Footprints", 0, true, true))
+		{
+			map<string, Footprint*>* innerMap;
+			for (int i = 0; i < FootprintTypesSize; ++i)
+			{
+				FootprintTypes fp_type = (FootprintTypes)(1 << i);
+				innerMap = getInnerMap_edit(&(configUserGlobal), fp_type);
+				if (innerMap)
+				{
+					ImGui::Text("Type 1 << %i", i);
+
+					for (map<string, Footprint*>::iterator mapIter = innerMap->begin(); mapIter != innerMap->end(); ++mapIter)
+					{
+						ImGui::Text("-   %s", (*mapIter).first.c_str());
+					}
+
+				}
+			}
 		}
 	}
 	else
@@ -1192,6 +1242,41 @@ float View::pathTo(point& p0, point& p1, PathType t, std::list<point>& path)
 }
 
 
+void flipY(int w, int h, unsigned char* a_pixels)
+{
+	float* pixels = (float*)a_pixels;
+	for (int i = 0; i < w; ++i)
+	{
+		for (int j = 0; j < h / 2; ++j)
+		{
+			float c = pixels[j * w + i];
+			pixels[j * w + i] = pixels[(h - j - 1) * w + i];
+			pixels[(h - j - 1) * w + i] = c;
+		}
+	}
+}
+
+
 void View::SaveImage(const char* a_fileName)
 {
+	int w = m_bufferWidth;
+	int h = m_bufferHeight;
+	int comp = 4;
+	int stride = 4 * m_bufferWidth;
+
+	unsigned char* pixelbuffer = new unsigned char[h * stride];
+	GLvoid* pixels = (GLvoid*)pixelbuffer;
+
+	if (m_frameBuffer)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, m_frameBuffer); // Set FBO
+		glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		flipY(w, h, pixelbuffer);
+
+		stbi_write_png(a_fileName, w, h, comp, (void*)pixels, stride);
+	}
+
+	delete pixelbuffer;
 }

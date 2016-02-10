@@ -53,16 +53,16 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_USE_MATH_DEFINES;WIN32;_DEBUG;_WINDOWS;ILUT_USE_OPENGL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\analyser;..\..\presentation;$(DEV)\StormLib-master\src;$(DEV)\SDL2_image-devel-2.0.0-VC\SDL2_image-2.0.0\include;$(DEV)\SDL2_ttf-devel-2.0.12-VC\SDL2_ttf-2.0.12\include;$(DEV)\SDL2-2.0.3\include;$(DEV)\tinyxml;$(DEV)\SDL2_gfx-1.0.1</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\analyser;..\..\presentation;$(DEV)\StormLib-master\src;$(DEV)\tinyxml;$(DEV)\freetype-2.6.2\include;$(DEV)\glfw\include;$(DEV)\glew-1.13.0\include;$(DEV)\gl3w;$(DEV)\ftgl-2.1.3~rc5\src</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile />
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(DEV)\SDL2_gfx-1.0.1\Win32\Release;$(DEV)\SDL2_image-devel-2.0.0-VC\SDL2_image-2.0.0\lib\x86;$(DEV)\SDL2_ttf-devel-2.0.12-VC\SDL2_ttf-2.0.12\lib\x86;$(DEV)\SDL2-2.0.3\lib\x86;$(DEV)\StormLib-master\bin\StormLib\Win32\DebugAS</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(DEV)\ftgl-2.1.3~rc5\msvc\Build;$(DEV)\glew-1.13.0\lib\Release\Win32;$(DEV)\glfw\lib-vc2010-32;$(DEV)\StormLib-master\bin\StormLib\Win32\DebugAD;$(DEV)\freetype-2.6.2\objs\vc2010\Win32</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmt</IgnoreSpecificDefaultLibraries>
-      <AdditionalDependencies>SDL2.lib;SDL2_image.lib;SDL2_ttf.lib;SDL2_gfx.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32.lib;glu32.lib;freetype262.lib;ftgl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -74,7 +74,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_USE_MATH_DEFINES;WIN32;NDEBUG;_WINDOWS;ILUT_USE_OPENGL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile />
-      <AdditionalIncludeDirectories>..\..\analyser;..\..\presentation;$(DEV)\StormLib-master\src;$(DEV)\SDL2_image-devel-2.0.0-VC\SDL2_image-2.0.0\include;$(DEV)\SDL2_ttf-devel-2.0.12-VC\SDL2_ttf-2.0.12\include;$(DEV)\SDL2-2.0.3\include;$(DEV)\tinyxml;$(DEV)\SDL2_gfx-1.0.1</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\analyser;..\..\presentation;$(DEV)\StormLib-master\src;$(DEV)\tinyxml;$(DEV)\freetype-2.6.2\include;$(DEV)\glfw\include;$(DEV)\glew-1.13.0\include;$(DEV)\gl3w;$(DEV)\ftgl-2.1.3~rc5\src</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -82,16 +82,18 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(DEV)\SDL2_gfx-1.0.1\Win32\Release;$(DEV)\SDL2_image-devel-2.0.0-VC\SDL2_image-2.0.0\lib\x86;$(DEV)\SDL2_ttf-devel-2.0.12-VC\SDL2_ttf-2.0.12\lib\x86;$(DEV)\SDL2-2.0.3\lib\x86;$(DEV)\StormLib-master\bin\StormLib\Win32\ReleaseAS</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(DEV)\ftgl-2.1.3~rc5\msvc\Build;$(DEV)\glew-1.13.0\lib\Release\Win32;$(DEV)\glfw-3.1.2\build\src\Release;$(DEV)\StormLib-master\bin\StormLib\Win32\ReleaseAS;$(DEV)\freetype-2.6.2\objs\vc2010\Win32</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
-      <AdditionalDependencies>SDL2.lib;SDL2_image.lib;SDL2_ttf.lib;SDL2_gfx.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32.lib;glu32.lib;ftgl.lib;freetype262.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\gl3w\GL\gl3w.h" />
+    <ClInclude Include="..\..\..\gl3w\GL\glcorearb.h" />
     <ClInclude Include="..\..\analyser\config.hpp" />
     <ClInclude Include="..\..\analyser\coordinates.hpp" />
     <ClInclude Include="..\..\analyser\debug.hpp" />
@@ -105,38 +107,22 @@
     <ClInclude Include="..\..\presentation\Common.h" />
     <ClInclude Include="..\..\presentation\Controller.h" />
     <ClInclude Include="..\..\presentation\FontManager.h" />
+    <ClInclude Include="..\..\presentation\FreeNeHe.h" />
+    <ClInclude Include="..\..\presentation\imconfig.h" />
+    <ClInclude Include="..\..\presentation\imgui.h" />
+    <ClInclude Include="..\..\presentation\imgui_impl_glfw.h" />
+    <ClInclude Include="..\..\presentation\imgui_internal.h" />
     <ClInclude Include="..\..\presentation\RectManager.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\Banner.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\Button.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\Combo.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\Container.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\DrawManager.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\HStack.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\ImageButton.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\ImageManager.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\List.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\Page.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\ResourceManager.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\Slider.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\SpriteManager.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\Stack.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\Switch.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\TextBox.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\ToggleButton.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\ToggleGroup.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\UIVerse.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\UVFontManager.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\UVLabel.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\UVRectManager.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\UVTab.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\VStack.h" />
-    <ClInclude Include="..\..\presentation\UV\UIVerse\Widget.h" />
-    <ClInclude Include="..\..\presentation\UV\UV.h" />
+    <ClInclude Include="..\..\presentation\stb_image_write.h" />
+    <ClInclude Include="..\..\presentation\stb_rect_pack.h" />
+    <ClInclude Include="..\..\presentation\stb_textedit.h" />
+    <ClInclude Include="..\..\presentation\stb_truetype.h" />
     <ClInclude Include="..\..\presentation\View.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\gl3w\GL\gl3w.c" />
     <ClCompile Include="..\..\..\tinyxml\tinystr.cpp" />
     <ClCompile Include="..\..\..\tinyxml\tinyxml.cpp" />
     <ClCompile Include="..\..\..\tinyxml\tinyxmlerror.cpp" />
@@ -161,31 +147,11 @@
     <ClCompile Include="..\..\presentation\Common.cpp" />
     <ClCompile Include="..\..\presentation\Controller.cpp" />
     <ClCompile Include="..\..\presentation\FontManager.cpp" />
+    <ClCompile Include="..\..\presentation\FreeNeHe.cpp" />
+    <ClCompile Include="..\..\presentation\imgui.cpp" />
+    <ClCompile Include="..\..\presentation\imgui_draw.cpp" />
+    <ClCompile Include="..\..\presentation\imgui_impl_glfw.cpp" />
     <ClCompile Include="..\..\presentation\RectManager.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\Banner.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\Button.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\Combo.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\Container.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\DrawManager.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\HStack.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\ImageButton.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\ImageManager.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\List.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\Page.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\ResourceManager.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\Slider.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\SpriteManager.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\Stack.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\Switch.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\TextBox.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\ToggleButton.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\ToggleGroup.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\UIVerse.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\UVLabel.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\UVRectManager.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\UVTab.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UIVerse\VStack.cpp" />
-    <ClCompile Include="..\..\presentation\UV\UV.cpp" />
     <ClCompile Include="..\..\presentation\View.cpp" />
     <ClCompile Include="SC2MA.cpp" />
   </ItemGroup>

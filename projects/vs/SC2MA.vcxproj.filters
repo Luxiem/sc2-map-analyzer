@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="SC2MA.cpp" />
+    <ClCompile Include="..\..\analyser\bookkeeping.cpp">
+      <Filter>Analyser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\analyser\bases.cpp">
+      <Filter>Analyser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\analyser\config.cpp">
+      <Filter>Analyser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\analyser\coordinates.cpp">
+      <Filter>Analyser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\analyser\debug.cpp">
+      <Filter>Analyser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\analyser\dijkstra.cpp">
+      <Filter>Analyser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\analyser\openness.cpp">
+      <Filter>Analyser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\analyser\outstreams.cpp">
+      <Filter>Analyser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\analyser\pathing.cpp">
+      <Filter>Analyser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\analyser\placedobjects.cpp">
+      <Filter>Analyser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\analyser\read.cpp">
+      <Filter>Analyser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\analyser\spreadsheet.cpp">
+      <Filter>Analyser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\analyser\utility.cpp">
+      <Filter>Analyser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\presentation\Common.cpp">
+      <Filter>Control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\presentation\Controller.cpp">
+      <Filter>Control</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\analyser\SC2Map.cpp">
+      <Filter>Analyser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\analyser\SC2MapAggregator.cpp">
+      <Filter>Analyser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tinyxml\tinystr.cpp">
+      <Filter>tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tinyxml\tinyxml.cpp">
+      <Filter>tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tinyxml\tinyxmlerror.cpp">
+      <Filter>tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tinyxml\tinyxmlparser.cpp">
+      <Filter>tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\presentation\View.cpp">
+      <Filter>View</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\analyser\PrioQueue.cpp">
+      <Filter>Analyser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\presentation\imgui.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\presentation\imgui_draw.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\presentation\imgui_impl_glfw.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\gl3w\GL\gl3w.c">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\presentation\RectManager.cpp">
+      <Filter>View</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\presentation\colour.cpp">
+      <Filter>View</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\presentation\FontManager.cpp">
+      <Filter>View</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\presentation\FreeNeHe.cpp">
+      <Filter>View</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="..\..\analyser\config.hpp">
+      <Filter>Analyser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\analyser\coordinates.hpp">
+      <Filter>Analyser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\analyser\debug.hpp">
+      <Filter>Analyser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\analyser\outstreams.hpp">
+      <Filter>Analyser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\analyser\utility.hpp">
+      <Filter>Analyser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\presentation\Common.h">
+      <Filter>Control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\presentation\Controller.h">
+      <Filter>Control</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\analyser\SC2Map.hpp">
+      <Filter>Analyser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\analyser\SC2MapAggregator.hpp">
+      <Filter>Analyser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\analyser\sc2mapTypes.hpp">
+      <Filter>Analyser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\presentation\View.h">
+      <Filter>View</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\analyser\PrioQueue.hpp">
+      <Filter>Analyser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\presentation\imconfig.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\presentation\imgui.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\presentation\imgui_internal.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\presentation\stb_rect_pack.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\presentation\stb_textedit.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\presentation\stb_truetype.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\presentation\imgui_impl_glfw.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\gl3w\GL\gl3w.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\gl3w\GL\glcorearb.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\presentation\RectManager.h">
+      <Filter>View</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\presentation\colour.h">
+      <Filter>View</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\presentation\FontManager.h">
+      <Filter>View</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\presentation\FreeNeHe.h">
+      <Filter>View</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\presentation\stb_image_write.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SC2MA.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="SC2MA.ico" />
+    <Image Include="small.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Analyser">
+      <UniqueIdentifier>{fceaa388-a63f-4a8e-9b05-3f5f091173b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="View">
+      <UniqueIdentifier>{121fec77-781b-47ed-8a7f-e58f8dfefacd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Control">
+      <UniqueIdentifier>{8da19b3f-bfbb-47b0-9026-353e5fe4317c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tinyxml">
+      <UniqueIdentifier>{2a380b9a-10a5-4f2a-ba62-327a97fcbdd5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ImGui">
+      <UniqueIdentifier>{1839ec11-f142-4924-b554-b9b54535f662}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
